@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funnel Mastery Academy | DotCom • Expert • Traffic Secrets</title>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --primary: #1a1a2e;
+  --secondary: #16213e;
+  --accent: #e94560;
+  --accent2: #f5a623;
+  --gold: #ffd700;
+  --teal: #0f3460;
+  --surface: #0d0d1a;
+  --card: #1e1e35;
+  --card2: #252540;
+  --text: #e8e8f0;
+  --text-muted: #9090b0;
+  --text-dim: #6060a0;
+  --border: rgba(233,69,96,0.2);
+  --border2: rgba(255,255,255,0.08);
+  --gradient: linear-gradient(135deg, #e94560 0%, #f5a623 100%);
+  --gradient2: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+  --shadow: 0 20px 60px rgba(0,0,0,0.5);
+  --radius: 12px;
+  --radius2: 20px;
+  --font-display: 'Georgia', serif;
+  --font-body: 'Segoe UI', system-ui, sans-serif;
+  --font-arabic: 'Traditional Arabic', 'Arial Unicode MS', serif;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] {
+  --primary: #f8f9ff;
+  --secondary: #eef0ff;
+  --surface: #ffffff;
+  --card: #f0f2ff;
+  --card2: #e8eaff;
+  --text: #1a1a2e;
+  --text-muted: #555580;
+  --text-dim: #8080a0;
+  --border: rgba(233,69,96,0.25);
+  --border2: rgba(0,0,0,0.08);
+  --teal: #0f3460;
+  --shadow: 0 20px 60px rgba(0,0,0,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+[lang="ar"] body, .ar-text { font-family: var(--font-arabic); }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--primary); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+/* ===== LOADER ===== */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px;
+}
+.loader-logo { font-size: 3rem; animation: pulse 1.5s infinite; }
+.loader-bar { width: 200px; height: 4px; background: var(--card2); border-radius: 2px; overflow: hidden; }
+.loader-fill { height: 100%; background: var(--gradient); border-radius: 2px; animation: load 2s ease forwards; }
+@keyframes load { from { width: 0 } to { width: 100% } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+/* ===== TOP NAV ===== */
+#topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  height: 60px;
+  background: rgba(13,13,26,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+}
+[data-theme="light"] #topnav { background: rgba(248,249,255,0.95); }
+.nav-logo { font-size: 1.1rem; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+.nav-spacer { flex: 1; }
+.nav-btn {
+  background: var(--card); border: 1px solid var(--border2);
+  color: var(--text); border-radius: 8px;
+  padding: 6px 14px; font-size: 0.8rem; cursor: pointer;
+  transition: var(--transition); white-space: nowrap;
+}
+.nav-btn:hover, .nav-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.nav-xp {
+  background: var(--gradient); color: white;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 700;
+  white-space: nowrap;
+}
+#hamburger { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+
+/* ===== LAYOUT ===== */
+#app { display: flex; padding-top: 60px; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+#sidebar {
+  width: 300px; min-width: 300px;
+  background: var(--primary);
+  border-right: 1px solid var(--border2);
+  height: calc(100vh - 60px);
+  position: sticky; top: 60px;
+  overflow-y: auto;
+  transition: transform 0.3s;
+}
+.sidebar-search {
+  padding: 16px;
+  border-bottom: 1px solid var(--border2);
+}
+.search-input {
+  width: 100%; padding: 10px 14px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text);
+  font-size: 0.85rem; outline: none;
+  transition: var(--transition);
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-dim); }
+
+.sidebar-progress {
+  padding: 16px;
+  border-bottom: 1px solid var(--border2);
+}
+.progress-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.progress-bar { height: 6px; background: var(--card2); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+.progress-fill { height: 100%; background: var(--gradient); border-radius: 3px; transition: width 0.5s; }
+
+.book-section { border-bottom: 1px solid var(--border2); }
+.book-header {
+  padding: 14px 16px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  transition: var(--transition);
+  font-weight: 600; font-size: 0.9rem;
+}
+.book-header:hover { background: var(--card); }
+.book-icon { font-size: 1.2rem; }
+.book-badge {
+  margin-left: auto; font-size: 0.7rem;
+  padding: 2px 8px; border-radius: 10px; color: white;
+}
+.badge-dotcom { background: #e94560; }
+.badge-expert { background: #7b2ff7; }
+.badge-traffic { background: #0984e3; }
+.badge-project { background: #00b894; }
+.book-toggle { margin-left: 4px; transition: transform 0.3s; font-size: 0.8rem; }
+.book-section.open .book-toggle { transform: rotate(180deg); }
+
+.module-list { display: none; }
+.book-section.open .module-list { display: block; }
+
+.module-item { padding: 10px 16px 10px 36px; cursor: pointer; font-size: 0.8rem; color: var(--text-muted); transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+.module-item:hover { background: var(--card); color: var(--text); }
+.module-item.active { background: rgba(233,69,96,0.1); color: var(--accent); border-right: 3px solid var(--accent); }
+.module-item.completed::after { content: '✓'; margin-left: auto; color: #00b894; font-size: 0.8rem; }
+.module-item.locked { opacity: 0.4; cursor: not-allowed; }
+.module-icon { font-size: 0.9rem; }
+
+/* ===== MAIN CONTENT ===== */
+#main { flex: 1; overflow-y: auto; min-width: 0; }
+.content-area { max-width: 900px; margin: 0 auto; padding: 40px 30px; }
+
+/* ===== DASHBOARD ===== */
+.dashboard-hero {
+  background: var(--gradient2);
+  border-radius: var(--radius2);
+  padding: 48px 40px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.dashboard-hero::before {
+  content: '';
+  position: absolute; top: -50%; right: -10%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(233,69,96,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow { color: var(--accent); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 12px; }
+.hero-title { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+.hero-title span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-subtitle { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin-bottom: 28px; }
+.hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 1.8rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 24px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: var(--shadow); }
+.card-icon { font-size: 2rem; margin-bottom: 12px; }
+.card-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.card-desc { font-size: 0.8rem; color: var(--text-muted); }
+.card-progress { margin-top: 16px; }
+.card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+
+/* ===== LESSON VIEW ===== */
+.lesson-header { margin-bottom: 32px; }
+.lesson-breadcrumb { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
+.lesson-breadcrumb span { color: var(--accent); }
+.lesson-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
+.lesson-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; }
+.lesson-meta-item { display: flex; align-items: center; gap: 4px; }
+.source-badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; margin-right: 8px; }
+.src-dotcom { background: rgba(233,69,96,0.2); color: #e94560; border: 1px solid rgba(233,69,96,0.3); }
+.src-expert { background: rgba(123,47,247,0.2); color: #a06af9; border: 1px solid rgba(123,47,247,0.3); }
+.src-traffic { background: rgba(9,132,227,0.2); color: #39a1f4; border: 1px solid rgba(9,132,227,0.3); }
+.src-practice { background: rgba(0,184,148,0.2); color: #00b894; border: 1px solid rgba(0,184,148,0.3); }
+
+.lesson-section { margin-bottom: 32px; }
+.section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-title::before { content: ''; display: block; width: 4px; height: 20px; background: var(--gradient); border-radius: 2px; }
+
+.lesson-content { color: var(--text); line-height: 1.8; }
+.lesson-content p { margin-bottom: 16px; }
+.lesson-content strong { color: var(--accent2); }
+
+.highlight-box {
+  background: linear-gradient(135deg, rgba(233,69,96,0.08), rgba(245,166,35,0.08));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 20px 0;
+  position: relative;
+}
+.highlight-box::before { content: '💡'; position: absolute; top: -12px; left: 20px; font-size: 1.2rem; }
+
+.info-box {
+  background: rgba(9,132,227,0.08);
+  border: 1px solid rgba(9,132,227,0.25);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0; }
+.framework-card {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  transition: var(--transition);
+}
+.framework-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.framework-card .ficon { font-size: 2rem; margin-bottom: 10px; }
+.framework-card .ftitle { font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+.framework-card .fdesc { font-size: 0.75rem; color: var(--text-muted); }
+
+.step-list { list-style: none; counter-reset: steps; }
+.step-item {
+  counter-increment: steps;
+  padding: 16px 16px 16px 60px;
+  position: relative;
+  margin-bottom: 12px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+}
+.step-item::before {
+  content: counter(steps);
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px;
+  background: var(--gradient);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.85rem; color: white;
+  line-height: 32px; text-align: center;
+}
+
+.funnel-visual {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  padding: 32px;
+  margin: 24px 0;
+  text-align: center;
+}
+.funnel-stage {
+  margin: 0 auto 8px;
+  border-radius: 8px;
+  padding: 14px 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  position: relative;
+  color: white;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.funnel-stage:hover { transform: scale(1.02); }
+.funnel-stage .stage-num { font-size: 0.7rem; opacity: 0.7; margin-right: 8px; }
+.funnel-arrow { text-align: center; color: var(--text-muted); font-size: 1.2rem; margin: 4px 0; }
+
+/* ===== QUIZ ===== */
+.quiz-container {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  padding: 32px;
+  margin: 24px 0;
+}
+.quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.quiz-title { font-size: 1.1rem; font-weight: 700; }
+.quiz-score-badge { background: var(--gradient); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+.question-block { margin-bottom: 24px; }
+.question-text { font-weight: 600; margin-bottom: 14px; font-size: 0.95rem; }
+.options-list { list-style: none; }
+.option-item {
+  padding: 12px 18px;
+  border: 2px solid var(--border2);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+.option-item:hover { border-color: var(--accent); background: rgba(233,69,96,0.05); }
+.option-item.selected { border-color: var(--accent2); background: rgba(245,166,35,0.1); }
+.option-item.correct { border-color: #00b894; background: rgba(0,184,148,0.1); }
+.option-item.wrong { border-color: #e17055; background: rgba(225,112,85,0.1); }
+.option-item.disabled { cursor: not-allowed; }
+.quiz-feedback { padding: 16px; border-radius: 10px; margin-top: 16px; font-size: 0.9rem; display: none; }
+.feedback-correct { background: rgba(0,184,148,0.1); border: 1px solid rgba(0,184,148,0.3); color: #00b894; }
+.feedback-wrong { background: rgba(225,112,85,0.1); border: 1px solid rgba(225,112,85,0.3); color: #e17055; }
+.quiz-btn {
+  background: var(--gradient); color: white; border: none;
+  padding: 12px 28px; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: var(--transition); margin-top: 16px;
+}
+.quiz-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ===== WORKSHEET ===== */
+.worksheet {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  padding: 32px;
+  margin: 24px 0;
+}
+.worksheet-title { font-size: 1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.worksheet-field { margin-bottom: 18px; }
+.field-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+.field-input, .field-textarea {
+  width: 100%; padding: 12px 16px;
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text);
+  font-family: var(--font-body); font-size: 0.9rem;
+  outline: none; transition: var(--transition);
+  resize: vertical;
+}
+.field-input:focus, .field-textarea:focus { border-color: var(--accent); }
+
+/* ===== NOTES ===== */
+.notes-panel {
+  position: fixed; right: -400px; top: 60px; bottom: 0;
+  width: 380px; background: var(--primary);
+  border-left: 1px solid var(--border2);
+  z-index: 500; transition: right 0.3s;
+  display: flex; flex-direction: column;
+}
+.notes-panel.open { right: 0; }
+.notes-header {
+  padding: 20px; border-bottom: 1px solid var(--border2);
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 700;
+}
+.notes-close { background: none; border: none; color: var(--text); cursor: pointer; font-size: 1.2rem; }
+.notes-list { flex: 1; overflow-y: auto; padding: 16px; }
+.note-card {
+  background: var(--card); border-radius: 10px;
+  padding: 14px; margin-bottom: 12px;
+  border: 1px solid var(--border2); font-size: 0.85rem;
+}
+.note-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+.note-delete { color: #e17055; cursor: pointer; font-size: 0.75rem; margin-left: 8px; }
+.notes-footer { padding: 16px; border-top: 1px solid var(--border2); }
+.note-input { width: 100%; padding: 12px; background: var(--card); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-size: 0.85rem; resize: none; outline: none; margin-bottom: 10px; }
+.note-input:focus { border-color: var(--accent); }
+
+/* ===== AI TUTOR ===== */
+.ai-tutor-panel {
+  position: fixed; left: -420px; top: 60px; bottom: 0;
+  width: 400px; background: var(--primary);
+  border-right: 1px solid var(--border2);
+  z-index: 500; transition: left 0.3s;
+  display: flex; flex-direction: column;
+}
+.ai-tutor-panel.open { left: 300px; }
+.ai-header { padding: 20px; border-bottom: 1px solid var(--border2); }
+.ai-title { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.ai-dot { width: 8px; height: 8px; background: #00b894; border-radius: 50%; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.ai-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.ai-msg {
+  padding: 12px 16px; border-radius: 12px;
+  font-size: 0.85rem; line-height: 1.6; max-width: 90%;
+}
+.ai-msg.bot { background: var(--card); border: 1px solid var(--border2); align-self: flex-start; }
+.ai-msg.user { background: var(--gradient); color: white; align-self: flex-end; border-radius: 12px 12px 4px 12px; }
+.ai-input-area { padding: 16px; border-top: 1px solid var(--border2); display: flex; gap: 8px; }
+.ai-input {
+  flex: 1; padding: 10px 14px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text); font-size: 0.85rem;
+  outline: none;
+}
+.ai-input:focus { border-color: var(--accent); }
+.ai-send { background: var(--gradient); border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
+.ai-quick-btns { padding: 0 16px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.ai-quick { background: var(--card2); border: 1px solid var(--border2); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: var(--transition); }
+.ai-quick:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== BADGES ===== */
+.badges-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.badge-item {
+  background: var(--card);
+  border: 2px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+.badge-item.earned { border-color: var(--gold); background: rgba(255,215,0,0.08); }
+.badge-item .badge-ico { font-size: 1.5rem; }
+.badge-item .badge-name { font-weight: 700; font-size: 0.8rem; }
+.badge-item .badge-desc { font-size: 0.72rem; color: var(--text-muted); }
+
+/* ===== TABS ===== */
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border2); margin-bottom: 24px; overflow-x: auto; }
+.tab-btn {
+  padding: 10px 20px; background: none; border: none;
+  color: var(--text-muted); cursor: pointer;
+  font-size: 0.85rem; font-weight: 600;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px; white-space: nowrap;
+  transition: var(--transition);
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== CHECKLIST ===== */
+.checklist { list-style: none; }
+.checklist li {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border2);
+  font-size: 0.88rem;
+}
+.checklist input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.checklist li.done { text-decoration: line-through; color: var(--text-muted); }
+
+/* ===== COMPLETION BTN ===== */
+.complete-btn {
+  background: var(--gradient); color: white; border: none;
+  padding: 16px 40px; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; gap: 10px;
+  margin: 32px auto 0;
+}
+.complete-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(233,69,96,0.4); }
+.complete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== CAPSTONE ===== */
+.capstone-hero {
+  background: linear-gradient(135deg, #1a0030, #0f3460);
+  border: 2px solid var(--gold);
+  border-radius: var(--radius2);
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.capstone-crown { font-size: 3rem; margin-bottom: 16px; }
+.capstone-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; }
+.capstone-desc { color: var(--text-muted); font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
+.rubric-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.85rem; }
+.rubric-table th { background: var(--card2); padding: 12px 16px; text-align: left; border: 1px solid var(--border2); }
+.rubric-table td { padding: 12px 16px; border: 1px solid var(--border2); vertical-align: top; }
+.rubric-table tr:hover td { background: var(--card); }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9000;
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 16px 24px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow); font-size: 0.9rem;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 350px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 1.3rem; }
+
+/* ===== ACCORDION ===== */
+.accordion-item { border: 1px solid var(--border2); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; }
+.accordion-header {
+  padding: 14px 18px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 600; font-size: 0.9rem;
+  transition: var(--transition); background: var(--card);
+}
+.accordion-header:hover { background: var(--card2); }
+.accordion-toggle { transition: transform 0.3s; }
+.accordion-item.open .accordion-toggle { transform: rotate(180deg); }
+.accordion-body { display: none; padding: 16px 18px; font-size: 0.88rem; line-height: 1.7; color: var(--text-muted); border-top: 1px solid var(--border2); }
+.accordion-item.open .accordion-body { display: block; }
+
+/* ===== CHART ===== */
+.value-ladder-chart { position: relative; }
+.vl-stage {
+  display: flex; align-items: center; margin-bottom: 8px;
+}
+.vl-bar-wrap { flex: 1; background: var(--card2); border-radius: 6px; height: 44px; overflow: hidden; margin-right: 16px; }
+.vl-bar { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 16px; font-weight: 700; font-size: 0.85rem; color: white; transition: width 1s; }
+.vl-label { width: 120px; font-size: 0.8rem; color: var(--text-muted); text-align: right; }
+.vl-price { font-weight: 700; font-size: 0.85rem; color: var(--accent2); margin-left: 12px; width: 80px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  #sidebar { position: fixed; left: 0; top: 60px; z-index: 900; transform: translateX(-100%); }
+  #sidebar.mobile-open { transform: translateX(0); }
+  .content-area { padding: 24px 16px; }
+  #hamburger { display: block; }
+  .hero-title { font-size: 1.6rem; }
+  .hero-stats { gap: 16px; }
+  .ai-tutor-panel { left: -420px; }
+  .ai-tutor-panel.open { left: 0; }
+  .dashboard-hero { padding: 28px 20px; }
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== RTL ===== */
+[dir="rtl"] .module-item { padding: 10px 36px 10px 16px; }
+[dir="rtl"] .module-item.active { border-right: none; border-left: 3px solid var(--accent); }
+[dir="rtl"] .section-title::before { margin-right: 0; margin-left: 8px; }
+[dir="rtl"] .step-item { padding: 16px 60px 16px 16px; }
+[dir="rtl"] .step-item::before { left: auto; right: 16px; }
+[dir="rtl"] .vl-label { text-align: left; margin-right: 16px; margin-left: 0; }
+[dir="rtl"] .vl-bar-wrap { margin-right: 0; margin-left: 16px; }
+
+/* ===== REFERENCE TABLE ===== */
+.ref-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.ref-table th { background: var(--teal); color: white; padding: 10px 14px; text-align: left; }
+.ref-table td { padding: 10px 14px; border-bottom: 1px solid var(--border2); }
+.ref-table tr:hover td { background: var(--card); }
+
+/* ===== TEMPLATE CARD ===== */
+.template-card {
+  background: var(--card2);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 12px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 1.8;
+  position: relative;
+}
+.template-header { font-family: var(--font-body); font-size: 0.8rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
+.copy-btn {
+  position: absolute; top: 12px; right: 12px;
+  background: var(--card); border: 1px solid var(--border2);
+  color: var(--text-muted); padding: 4px 10px;
+  border-radius: 6px; font-size: 0.75rem; cursor: pointer;
+  transition: var(--transition); font-family: var(--font-body);
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ===== FLOATING BUTTONS ===== */
+.float-btns {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 12px; z-index: 800;
+}
+.float-btn {
+  background: var(--card2); border: 1px solid var(--border2);
+  color: var(--text); padding: 10px 18px; border-radius: 24px;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: var(--transition); backdrop-filter: blur(10px);
+  display: flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.float-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+
+/* ===== CERT ===== */
+.certificate {
+  background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+  border: 3px solid var(--gold);
+  border-radius: var(--radius2);
+  padding: 60px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cert-corner { position: absolute; font-size: 3rem; opacity: 0.1; }
+.cert-corner.tl { top: 10px; left: 10px; }
+.cert-corner.tr { top: 10px; right: 10px; }
+.cert-corner.bl { bottom: 10px; left: 10px; }
+.cert-corner.br { bottom: 10px; right: 10px; }
+.cert-seal { font-size: 4rem; margin-bottom: 20px; }
+.cert-title { font-family: var(--font-display); font-size: 1.5rem; color: var(--gold); margin-bottom: 10px; }
+.cert-body { font-size: 1rem; color: var(--text-muted); }
+.cert-name { font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 12px 0; }
+
+/* ===== HIDDEN ===== */
+.hidden { display: none !important; }
+
+/* Animated gradient text */
+.gradient-text { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* Section divider */
+.divider { height: 1px; background: var(--border2); margin: 32px 0; }
+
+/* Next/Prev nav */
+.lesson-nav { display: flex; justify-content: space-between; margin-top: 40px; gap: 16px; }
+.nav-lesson-btn {
+  background: var(--card); border: 1px solid var(--border2);
+  color: var(--text); padding: 12px 20px; border-radius: 10px;
+  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
+}
+.nav-lesson-btn:hover { border-color: var(--accent); color: var(--accent); }
+.nav-lesson-btn.primary { background: var(--gradient); color: white; border: none; }
+.nav-lesson-btn.primary:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">🚀</div>
+  <div style="font-size:1.1rem;font-weight:700;" data-en="Funnel Mastery Academy" data-ar="أكاديمية إتقان القمع"></div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div style="font-size:0.8rem;color:var(--text-muted);" data-en="Loading your learning platform..." data-ar="جارٍ تحميل منصة التعلم..."></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast">
+  <span class="toast-icon" id="toast-icon">🎉</span>
+  <span id="toast-msg">Achievement unlocked!</span>
+</div>
+
+<!-- NOTES PANEL -->
+<div class="notes-panel" id="notesPanel">
+  <div class="notes-header">
+    <span data-en="📝 My Notes" data-ar="📝 ملاحظاتي"></span>
+    <button class="notes-close" onclick="toggleNotes()">✕</button>
+  </div>
+  <div class="notes-list" id="notesList"></div>
+  <div class="notes-footer">
+    <textarea class="note-input" id="noteInput" rows="3" data-en-placeholder="Add a note about this lesson..." data-ar-placeholder="أضف ملاحظة حول هذا الدرس..."></textarea>
+    <button class="quiz-btn" onclick="saveNote()" style="width:100%" data-en="Save Note" data-ar="حفظ الملاحظة"></button>
+  </div>
+</div>
+
+<!-- AI TUTOR PANEL -->
+<div class="ai-tutor-panel" id="aiPanel">
+  <div class="ai-header">
+    <div class="ai-title">
+      <div class="ai-dot"></div>
+      <span data-en="AI Tutor — Funnel Coach" data-ar="المعلم الذكي — مدرب القمع"></span>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <button class="notes-close" onclick="resetAIChat()" title="New chat">🗑️</button>
+      <button class="notes-close" onclick="toggleAI()">✕</button>
+    </div>
+  </div>
+  <div class="ai-quick-btns">
+    <button class="ai-quick" onclick="aiAsk('Explain this concept simply')" data-en="Simplify" data-ar="اشرح ببساطة">Simplify</button>
+    <button class="ai-quick" onclick="aiAsk('Give me a real-world example')" data-en="Example" data-ar="مثال">Example</button>
+    <button class="ai-quick" onclick="aiAsk('How do I apply this in my business?')" data-en="Apply it" data-ar="كيف أطبق">Apply it</button>
+    <button class="ai-quick" onclick="aiAsk('Quiz me on this lesson')" data-en="Quiz me" data-ar="اختبرني">Quiz me</button>
+    <button class="ai-quick" onclick="aiAsk('What are common mistakes to avoid?')" data-en="Mistakes" data-ar="الأخطاء">Mistakes</button>
+  </div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg bot" data-en="👋 Hello! I'm your AI Funnel Coach. I can explain concepts, generate examples, quiz you, or help you apply Russell Brunson's strategies to your business. What do you want to master?" data-ar="👋 مرحباً! أنا مدرب القمع الذكي. يمكنني شرح المفاهيم، وتقديم أمثلة، واختبارك، ومساعدتك في تطبيق استراتيجيات راسل برانسون على عملك. ماذا تريد أن تتعلم؟">👋 Hello! I'm your AI Funnel Coach. I can explain concepts, generate examples, quiz you, or help you apply Russell Brunson's strategies to your business. What do you want to master?</div>
+  </div>
+  <div class="ai-input-area">
+    <input class="ai-input" id="aiInput" data-en-placeholder="Ask anything..." data-ar-placeholder="اسأل أي شيء...">
+    <button class="ai-send" onclick="sendAIMessage()">→</button>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav id="topnav">
+  <button id="hamburger" onclick="toggleSidebar()">☰</button>
+  <div class="nav-logo" data-en="🚀 Funnel Mastery Academy" data-ar="🚀 أكاديمية إتقان القمع">🚀 Funnel Mastery Academy</div>
+  <div class="nav-spacer"></div>
+  <div class="nav-xp" id="xpDisplay">⚡ 0 XP</div>
+  <button class="nav-btn" onclick="toggleAI()" data-en="🤖 AI Tutor" data-ar="🤖 المعلم الذكي">🤖 AI Tutor</button>
+  <button class="nav-btn" onclick="toggleNotes()" data-en="📝 Notes" data-ar="📝 ملاحظات">📝 Notes</button>
+  <button class="nav-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <button class="nav-btn" onclick="toggleLang()" id="langBtn">🌐 AR</button>
+</nav>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-search">
+      <input class="search-input" id="searchInput" placeholder="🔍 Search lessons..." oninput="searchLessons(this.value)" data-en-placeholder="🔍 Search lessons..." data-ar-placeholder="🔍 ابحث في الدروس...">
+    </div>
+    <div class="sidebar-progress">
+      <div class="progress-label">
+        <span data-en="Overall Progress" data-ar="التقدم العام"></span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div style="font-size:0.72rem;color:var(--text-dim)" id="progressDetail"></div>
+    </div>
+    <div id="curriculum"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+    <div class="content-area" id="contentArea">
+      <!-- Dashboard injected here -->
+    </div>
+  </main>
+
+</div>
+
+<!-- FLOAT BTNS -->
+<div class="float-btns" id="floatBtns" style="display:none">
+  <button class="float-btn" id="prevBtn" onclick="navigate(-1)">← <span data-en="Prev" data-ar="السابق">Prev</span></button>
+  <button class="float-btn" id="nextBtn" onclick="navigate(1)"><span data-en="Next" data-ar="التالي">Next</span> →</button>
+</div>
+
+<script>
+// ===== STATE =====
+const STATE = {
+  lang: 'en',
+  theme: 'dark',
+  xp: 0,
+  completed: JSON.parse(localStorage.getItem('fma_completed') || '[]'),
+  notes: JSON.parse(localStorage.getItem('fma_notes') || '[]'),
+  badges: JSON.parse(localStorage.getItem('fma_badges') || '[]'),
+  currentLesson: null,
+  quizScores: JSON.parse(localStorage.getItem('fma_quiz') || '{}')
+};
+
+// ===== CURRICULUM DATA =====
+const CURRICULUM = [
+  {
+    id: 'dotcom',
+    icon: '🔴',
+    en: 'DotCom Secrets',
+    ar: 'أسرار دوت كوم',
+    badge: 'badge-dotcom',
+    badgeText: { en: 'Funnels', ar: 'القمع' },
+    modules: [
+      {
+        id: 'dc-intro',
+        icon: '🎯',
+        en: 'Introduction to Funnels',
+        ar: 'مقدمة في القمع التسويقي',
+        type: 'dotcom',
+        lessons: ['dc-what-is-funnel', 'dc-why-funnels', 'dc-funnel-vs-website']
+      },
+      {
+        id: 'dc-value-ladder',
+        icon: '📈',
+        en: 'The Value Ladder',
+        ar: 'سلم القيمة',
+        type: 'dotcom',
+        lessons: ['dc-value-ladder-intro', 'dc-building-ladder', 'dc-offers-ladder']
+      },
+      {
+        id: 'dc-attractive-char',
+        icon: '🌟',
+        en: 'The Attractive Character',
+        ar: 'الشخصية الجذابة',
+        type: 'dotcom',
+        lessons: ['dc-ac-elements', 'dc-ac-story', 'dc-ac-emails']
+      },
+      {
+        id: 'dc-hook-story-offer',
+        icon: '🪝',
+        en: 'Hook, Story, Offer',
+        ar: 'الخطاف، القصة، العرض',
+        type: 'dotcom',
+        lessons: ['dc-hook', 'dc-story-framework', 'dc-offer-stack']
+      },
+      {
+        id: 'dc-funnel-types',
+        icon: '🏗️',
+        en: 'Funnel Types & Maps',
+        ar: 'أنواع وخرائط القمع',
+        type: 'dotcom',
+        lessons: ['dc-lead-funnel', 'dc-sales-funnel', 'dc-webinar-funnel', 'dc-product-launch']
+      },
+      {
+        id: 'dc-email',
+        icon: '📧',
+        en: 'Email Sequences',
+        ar: 'تسلسلات البريد الإلكتروني',
+        type: 'dotcom',
+        lessons: ['dc-soap-opera', 'dc-seinfeld', 'dc-broadcast']
+      },
+      {
+        id: 'dc-conversion',
+        icon: '⚡',
+        en: 'Conversion Optimization',
+        ar: 'تحسين معدل التحويل',
+        type: 'dotcom',
+        lessons: ['dc-copywriting', 'dc-split-testing', 'dc-upsell-downsell']
+      }
+    ]
+  },
+  {
+    id: 'expert',
+    icon: '🟣',
+    en: 'Expert Secrets',
+    ar: 'أسرار الخبير',
+    badge: 'badge-expert',
+    badgeText: { en: 'Expert', ar: 'الخبير' },
+    modules: [
+      {
+        id: 'ex-positioning',
+        icon: '👑',
+        en: 'Expert Positioning',
+        ar: 'تموضع الخبير',
+        type: 'expert',
+        lessons: ['ex-find-niche', 'ex-expert-identity', 'ex-charisma']
+      },
+      {
+        id: 'ex-beliefs',
+        icon: '🧠',
+        en: 'Belief Patterns & False Beliefs',
+        ar: 'أنماط المعتقدات والمعتقدات الخاطئة',
+        type: 'expert',
+        lessons: ['ex-false-beliefs', 'ex-breaking-beliefs', 'ex-reframing']
+      },
+      {
+        id: 'ex-epiphany',
+        icon: '💡',
+        en: 'Epiphany Bridge Stories',
+        ar: 'قصص جسر الإلهام',
+        type: 'expert',
+        lessons: ['ex-epiphany-bridge', 'ex-heros-journey', 'ex-story-selling']
+      },
+      {
+        id: 'ex-movement',
+        icon: '🌊',
+        en: 'Creating a Mass Movement',
+        ar: 'إنشاء حركة جماهيرية',
+        type: 'expert',
+        lessons: ['ex-movement-framework', 'ex-future-cause', 'ex-new-opportunity']
+      },
+      {
+        id: 'ex-presentation',
+        icon: '🎤',
+        en: 'The Perfect Webinar',
+        ar: 'الندوة المثالية',
+        type: 'expert',
+        lessons: ['ex-webinar-structure', 'ex-stack-close', 'ex-presentation-secrets']
+      },
+      {
+        id: 'ex-publishing',
+        icon: '📚',
+        en: 'Expert Publishing Strategy',
+        ar: 'استراتيجية نشر الخبير',
+        type: 'expert',
+        lessons: ['ex-content-publishing', 'ex-book-funnel', 'ex-podcast-strategy']
+      }
+    ]
+  },
+  {
+    id: 'traffic',
+    icon: '🔵',
+    en: 'Traffic Secrets',
+    ar: 'أسرار الزيارات',
+    badge: 'badge-traffic',
+    badgeText: { en: 'Traffic', ar: 'الزيارات' },
+    modules: [
+      {
+        id: 'tr-dream100',
+        icon: '💎',
+        en: 'The Dream 100',
+        ar: 'قائمة الحلم المئة',
+        type: 'traffic',
+        lessons: ['tr-dream100-intro', 'tr-build-list', 'tr-outreach']
+      },
+      {
+        id: 'tr-organic',
+        icon: '🌱',
+        en: 'Organic Traffic Systems',
+        ar: 'أنظمة الزيارات العضوية',
+        type: 'traffic',
+        lessons: ['tr-content-strategy', 'tr-seo-basics', 'tr-social-organic']
+      },
+      {
+        id: 'tr-paid',
+        icon: '💰',
+        en: 'Paid Traffic Mastery',
+        ar: 'إتقان الإعلانات المدفوعة',
+        type: 'traffic',
+        lessons: ['tr-fb-ads', 'tr-google-ads', 'tr-retargeting']
+      },
+      {
+        id: 'tr-platform',
+        icon: '📱',
+        en: 'Platform Growth',
+        ar: 'نمو المنصات',
+        type: 'traffic',
+        lessons: ['tr-instagram', 'tr-youtube', 'tr-tiktok', 'tr-email-list']
+      },
+      {
+        id: 'tr-scaling',
+        icon: '🚀',
+        en: 'Traffic Scaling Systems',
+        ar: 'أنظمة توسيع الزيارات',
+        type: 'traffic',
+        lessons: ['tr-own-traffic', 'tr-affiliate', 'tr-jv-partnerships']
+      }
+    ]
+  },
+  {
+    id: 'capstone',
+    icon: '🏆',
+    en: 'Capstone Project',
+    ar: 'المشروع الختامي',
+    badge: 'badge-project',
+    badgeText: { en: 'Project', ar: 'مشروع' },
+    modules: [
+      {
+        id: 'cap-build',
+        icon: '🔨',
+        en: 'Build Your Funnel Empire',
+        ar: 'ابنِ إمبراطورية القمع الخاصة بك',
+        type: 'project',
+        lessons: ['cap-value-ladder', 'cap-funnel-build', 'cap-traffic-plan', 'cap-launch', 'cap-certificate']
+      }
+    ]
+  }
+];
+
+// ===== LESSON DATABASE =====
+const LESSONS = {
+  'dc-what-is-funnel': {
+    en: 'What is a Sales Funnel?',
+    ar: 'ما هو قمع المبيعات؟',
+    book: 'DotCom Secrets',
+    chapter: 'Introduction',
+    source: 'dotcom',
+    xp: 50,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">The Core Concept</div>
+          <div class="lesson-content">
+            <p>A sales funnel is the <strong>journey you deliberately design</strong> to take a stranger and turn them into a raving fan and repeat customer. Unlike a website that shows everything to everyone, a funnel is a series of pages designed to guide one specific person toward one specific goal.</p>
+            <p>Russell Brunson's core insight: <strong>the internet is not a business — it's a place to find your customers.</strong> Your funnel is the mechanism that converts attention into revenue.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>Key Definition:</strong> A sales funnel is a series of steps that moves a prospect from "I don't know you" → "I trust you" → "Here is my money." Each step filters out non-buyers and maximizes value from buyers.
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Why Funnels Beat Websites</div>
+          <div class="framework-grid">
+            <div class="framework-card">
+              <div class="ficon">🌐</div>
+              <div class="ftitle">Website</div>
+              <div class="fdesc">Many options, visitor decides. Average conversion: 1-2%. Leads leak everywhere.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">🔻</div>
+              <div class="ftitle">Sales Funnel</div>
+              <div class="fdesc">One path, one decision. Average conversion: 10-40%. Revenue maximized at each step.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">💰</div>
+              <div class="ftitle">The Difference</div>
+              <div class="fdesc">ClickFunnels users saw avg 3x higher revenue vs traditional website on same traffic.</div>
+            </div>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The Basic Funnel Structure</div>
+          <div class="funnel-visual">
+            <div style="color:var(--text-muted);font-size:0.8rem;margin-bottom:16px;text-transform:uppercase;letter-spacing:2px">Top ← Awareness → Bottom</div>
+            <div class="funnel-stage" style="background:linear-gradient(90deg,#e94560,#c0392b);width:100%"><span class="stage-num">①</span> AWARENESS — Traffic arrives at your landing page</div>
+            <div class="funnel-arrow">↓</div>
+            <div class="funnel-stage" style="background:linear-gradient(90deg,#9b59b6,#8e44ad);width:85%"><span class="stage-num">②</span> LEAD — They opt-in for your free offer</div>
+            <div class="funnel-arrow">↓</div>
+            <div class="funnel-stage" style="background:linear-gradient(90deg,#2980b9,#1a6fa3);width:70%"><span class="stage-num">③</span> FRONT-END OFFER — First paid product ($7-$47)</div>
+            <div class="funnel-arrow">↓</div>
+            <div class="funnel-stage" style="background:linear-gradient(90deg,#27ae60,#1e8449);width:55%"><span class="stage-num">④</span> UPSELL — Core offer ($97-$497)</div>
+            <div class="funnel-arrow">↓</div>
+            <div class="funnel-stage" style="background:linear-gradient(90deg,#f39c12,#e67e22);width:35%"><span class="stage-num">⑤</span> BACKEND — High-ticket / Continuity ($1,000+)</div>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Real-World Case Study</div>
+          <div class="info-box">
+            <strong>📦 Example: Supplement Company</strong><br><br>
+            <strong>Website approach:</strong> 10,000 visitors → 1% buy → 100 sales × $40 = $4,000<br><br>
+            <strong>Funnel approach:</strong> 10,000 visitors → 30% opt-in (3,000 leads) → 5% buy front-end (150 sales × $40 = $6,000) → 30% take upsell (45 × $120 = $5,400) → 10% take backend (15 × $500 = $7,500)<br><br>
+            <strong>Total funnel revenue: $18,900 vs $4,000</strong> — 4.7x more from same traffic.
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">المفهوم الأساسي</div>
+          <div class="lesson-content">
+            <p>قمع المبيعات هو <strong>الرحلة التي تصممها عن قصد</strong> لتحويل الغريب إلى معجب متحمس وعميل متكرر. على عكس الموقع الإلكتروني الذي يعرض كل شيء للجميع، القمع هو سلسلة من الصفحات مصممة لتوجيه شخص معين نحو هدف محدد.</p>
+            <p>الفكرة الأساسية لراسل برانسون: <strong>الإنترنت ليس عملاً تجارياً — إنه مكان لإيجاد عملائك.</strong> قمعك هو الآلية التي تحول الانتباه إلى إيرادات.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>تعريف رئيسي:</strong> قمع المبيعات هو سلسلة من الخطوات تنقل العميل المحتمل من "لا أعرفك" ← "أثق بك" ← "خذ مالي." كل خطوة تصفي غير المشترين وتعظم القيمة من المشترين.
+          </div>
+        </div>`
+    }
+  },
+  'dc-value-ladder-intro': {
+    en: 'The Value Ladder — Build Your Ascension Model',
+    ar: 'سلم القيمة — ابنِ نموذج الصعود',
+    book: 'DotCom Secrets',
+    chapter: 'Chapter 1: The Secret Formula',
+    source: 'dotcom',
+    xp: 75,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">What is the Value Ladder?</div>
+          <div class="lesson-content">
+            <p>The Value Ladder is the foundation of Russell Brunson's entire framework. It's a system of ascending offers, where each level provides <strong>more value at a higher price point</strong>, and each purchase prepares the customer to want the next level.</p>
+            <p>Most businesses fail because they try to sell high-ticket offers to cold traffic. The Value Ladder solves this by building trust and delivering value progressively.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>Core Principle:</strong> "If I want to make more money, I have to find ways to serve my clients at higher and higher levels." — Russell Brunson
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 4 Levels of Value Ladder</div>
+          <div class="value-ladder-chart" id="vlChart">
+            <div class="vl-stage">
+              <div class="vl-label">Bait / Lead Magnet</div>
+              <div class="vl-bar-wrap"><div class="vl-bar" style="width:95%;background:linear-gradient(90deg,#74b9ff,#0984e3)">Free</div></div>
+              <div class="vl-price">$0</div>
+            </div>
+            <div class="vl-stage">
+              <div class="vl-label">Frontend Offer</div>
+              <div class="vl-bar-wrap"><div class="vl-bar" style="width:72%;background:linear-gradient(90deg,#a29bfe,#6c5ce7)">Low Cost</div></div>
+              <div class="vl-price">$7–$97</div>
+            </div>
+            <div class="vl-stage">
+              <div class="vl-label">Core Offer</div>
+              <div class="vl-bar-wrap"><div class="vl-bar" style="width:50%;background:linear-gradient(90deg,#fd79a8,#e84393)">Mid Tier</div></div>
+              <div class="vl-price">$197–$997</div>
+            </div>
+            <div class="vl-stage">
+              <div class="vl-label">Backend / Continuity</div>
+              <div class="vl-bar-wrap"><div class="vl-bar" style="width:28%;background:linear-gradient(90deg,#fdcb6e,#e17055)">High Ticket</div></div>
+              <div class="vl-price">$2,000+</div>
+            </div>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Real Value Ladder Examples</div>
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+              <span>💪 Fitness Coach Example</span>
+              <span class="accordion-toggle">▼</span>
+            </div>
+            <div class="accordion-body">
+              <strong>Free:</strong> "5 Fat-Burning Exercises" PDF<br>
+              <strong>$27:</strong> "30-Day Home Workout Plan" ebook<br>
+              <strong>$297:</strong> 12-week online training program + nutrition guide<br>
+              <strong>$2,500:</strong> 1-on-1 coaching program (3 months)<br>
+              <strong>$500/mo:</strong> Inner Circle accountability group
+            </div>
+          </div>
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+              <span>🏢 B2B SaaS Example</span>
+              <span class="accordion-toggle">▼</span>
+            </div>
+            <div class="accordion-body">
+              <strong>Free:</strong> "Ultimate CRM Checklist" download<br>
+              <strong>$1/trial:</strong> 14-day software trial<br>
+              <strong>$97/mo:</strong> Starter plan (1-5 users)<br>
+              <strong>$497/mo:</strong> Professional plan with integrations<br>
+              <strong>$5,000+:</strong> Enterprise custom implementation
+            </div>
+          </div>
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+              <span>📱 Social Media Agency (SMMA) Example</span>
+              <span class="accordion-toggle">▼</span>
+            </div>
+            <div class="accordion-body">
+              <strong>Free:</strong> "SMMA Audit Checklist" + video training<br>
+              <strong>$47:</strong> "Get Your First Client" course<br>
+              <strong>$497:</strong> SMMA Launch Bootcamp (6 weeks)<br>
+              <strong>$2,000/mo:</strong> Done-For-You Social Media Management<br>
+              <strong>$10,000+:</strong> White-label agency partnership program
+            </div>
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">ما هو سلم القيمة؟</div>
+          <div class="lesson-content">
+            <p>سلم القيمة هو أساس إطار عمل راسل برانسون بأكمله. إنه نظام من العروض المتصاعدة، حيث يوفر كل مستوى <strong>قيمة أكبر بسعر أعلى</strong>، وكل عملية شراء تعد العميل لرغبة المستوى التالي.</p>
+            <p>تفشل معظم الأعمال لأنها تحاول بيع عروض عالية التذكرة لحركة مرور باردة. يحل سلم القيمة هذه المشكلة من خلال بناء الثقة وتقديم القيمة تدريجياً.</p>
+          </div>
+        </div>`
+    }
+  },
+  'dc-ac-elements': {
+    en: 'The Attractive Character — 4 Elements',
+    ar: 'الشخصية الجذابة — 4 عناصر',
+    book: 'DotCom Secrets',
+    chapter: 'Chapter 3: The Attractive Character',
+    source: 'dotcom',
+    xp: 75,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">What is the Attractive Character?</div>
+          <div class="lesson-content">
+            <p>The Attractive Character (AC) is the persona you create to communicate with your list. It's not necessarily "you" — it's the character your audience <strong>wants to follow, trust, and buy from</strong>. Think of it as your brand's personality, engineered for maximum connection.</p>
+            <p>Russell Brunson identifies 4 types of Attractive Characters and the elements that make them work.</p>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 4 Attractive Character Types</div>
+          <div class="framework-grid">
+            <div class="framework-card">
+              <div class="ficon">🦸</div>
+              <div class="ftitle">The Leader</div>
+              <div class="fdesc">Takes their audience from where they are to where they want to be. Has the answer, shows the way.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">🧭</div>
+              <div class="ftitle">The Adventurer</div>
+              <div class="fdesc">Explores and discovers, brings back lessons for the audience. Shares the journey in real time.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">📣</div>
+              <div class="ftitle">The Reporter</div>
+              <div class="fdesc">Interviews experts, curates information. Authority through proximity and curation.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">🦸‍♀️</div>
+              <div class="ftitle">The Reluctant Hero</div>
+              <div class="fdesc">Didn't want to be an expert, was thrust into it. Most relatable — "I'm just like you."</div>
+            </div>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 4 Core Elements of Every AC</div>
+          <ul class="step-list">
+            <li class="step-item"><strong>Backstory</strong> — The story that created who they are today. Must include a struggle that your audience can identify with. The deeper the relatability, the stronger the connection.</li>
+            <li class="step-item"><strong>Parables</strong> — Short stories that convey beliefs and values. These are used in emails, posts, and videos to teach lessons through narrative instead of lectures.</li>
+            <li class="step-item"><strong>Character Flaws</strong> — Nobody trusts perfection. Your AC must be vulnerable, imperfect, and real. Share flaws that are relatable but don't undermine your authority.</li>
+            <li class="step-item"><strong>Polarity</strong> — The AC has strong opinions. They attract the right people and repel the wrong ones. This creates raving fans, not lukewarm followers.</li>
+          </ul>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Build Your Attractive Character</div>
+          <div class="worksheet">
+            <div class="worksheet-title">📋 Attractive Character Worksheet</div>
+            <div class="worksheet-field">
+              <div class="field-label">What type of AC are you? (Leader / Adventurer / Reporter / Reluctant Hero)</div>
+              <input class="field-input" placeholder="e.g. Reluctant Hero — I stumbled into this...">
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Your Backstory (What struggle connects you to your audience?)</div>
+              <textarea class="field-textarea" rows="3" placeholder="e.g. I was broke and desperate, failed 3 businesses, then discovered..."></textarea>
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Your Polarity (What do you stand FOR and AGAINST?)</div>
+              <textarea class="field-textarea" rows="2" placeholder="e.g. I believe in ethical marketing and am against manipulative tactics..."></textarea>
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">1 Character Flaw You'll Share (makes you relatable)</div>
+              <input class="field-input" placeholder="e.g. I'm terrible at consistency, I used to quit everything...">
+            </div>
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">ما هي الشخصية الجذابة؟</div>
+          <div class="lesson-content">
+            <p>الشخصية الجذابة هي الشخصية التي تنشئها للتواصل مع قائمتك. ليست بالضرورة "أنت" — إنها الشخصية التي يريد جمهورك <strong>متابعتها والثقة بها والشراء منها</strong>.</p>
+          </div>
+        </div>`
+    }
+  },
+  'dc-hook': {
+    en: 'The Hook — Grabbing Attention in 3 Seconds',
+    ar: 'الخطاف — جذب الانتباه في 3 ثوانٍ',
+    book: 'DotCom Secrets',
+    chapter: 'Section 2: The Communication Funnel',
+    source: 'dotcom',
+    xp: 100,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">Why the Hook is Everything</div>
+          <div class="lesson-content">
+            <p>Russell Brunson's formula is: <strong>Hook → Story → Offer.</strong> But without a hook, there is no story or offer — because no one is listening. The hook is the thing that stops someone mid-scroll or mid-conversation and makes them think "wait, what?"</p>
+            <p>In today's attention economy, you have <strong>3 seconds maximum</strong> to grab someone before they scroll past, click away, or tune out. Your hook must be sharp, specific, and speak directly to one person's desire or pain.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>Russell's Hook Formula:</strong> "What + Who + Why Now" = Irresistible curiosity that stops the scroll.
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 5 Types of Hooks</div>
+          <ul class="step-list">
+            <li class="step-item"><strong>Question Hook:</strong> "What would you do if your business made $10K while you slept?" — Questions trigger the brain's gap-filling instinct.</li>
+            <li class="step-item"><strong>Shock Stat Hook:</strong> "97% of online businesses fail in year one. Here's what the 3% do differently." — Stats create credibility and contrast.</li>
+            <li class="step-item"><strong>Story Hook:</strong> "In 2019 I was $100K in debt. Today I run a 7-figure company. Here's the one funnel that changed everything." — Story creates investment.</li>
+            <li class="step-item"><strong>Secret Hook:</strong> "The 'weird' sales trick that top earners never talk about..." — Secrets create exclusivity and urgency.</li>
+            <li class="step-item"><strong>Curiosity Gap Hook:</strong> "I almost quit everything... until I found THIS." — Incomplete information forces the brain to seek closure.</li>
+          </ul>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Swipe File — 20 Proven Hook Templates</div>
+          <div class="template-card">
+            <div class="template-header">⚡ Copy-Paste Hook Templates</div>
+            <button class="copy-btn" onclick="copyTemplate(this)">Copy All</button>
+            1. "How I [achieved result] in [time] without [common struggle]"<br>
+            2. "The [number]-step system [expert/company] uses to [result]"<br>
+            3. "Stop doing [common thing]. Do THIS instead."<br>
+            4. "What nobody tells you about [topic]"<br>
+            5. "I tried [X] different [methods] to [achieve goal]. Here's what actually worked."<br>
+            6. "The reason [audience] are [struggling] has nothing to do with [obvious reason]"<br>
+            7. "If I had to start [business/skill] from zero today, I would do THIS"<br>
+            8. "Warning: Do NOT [do thing] until you've read this"<br>
+            9. "The [adjective] truth about [desirable result]"<br>
+            10. "[Controversial statement that your audience believes is wrong] — here's proof."<br>
+            11. "You're [losing/leaving] $[amount] per month because of this one mistake"<br>
+            12. "Steal my [resource/system/template] for [desired outcome]"<br>
+            13. "[Famous person] just revealed their [secret/strategy]. Here's how to use it."<br>
+            14. "How [similar person] went from [bad state] to [good state] in [short time]"<br>
+            15. "I got [result] with zero [typical requirement]. Here's exactly how."<br>
+            16. "The [industry] secret that [big companies] don't want you to know"<br>
+            17. "Before you spend another dollar on [thing], read this"<br>
+            18. "My [client/student] just got [specific result]. Copy their exact [system/steps]"<br>
+            19. "If you hate [common task], this [solution] is for you"<br>
+            20. "[Number] things I wish someone told me about [topic] before I started"
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">لماذا الخطاف هو كل شيء</div>
+          <div class="lesson-content">
+            <p>معادلة راسل برانسون: <strong>الخطاف ← القصة ← العرض.</strong> بدون خطاف، لا توجد قصة أو عرض — لأن لا أحد يستمع. الخطاف هو الشيء الذي يوقف شخصاً ما في منتصف التمرير.</p>
+          </div>
+        </div>`
+    }
+  },
+  'dc-soap-opera': {
+    en: 'The Soap Opera Email Sequence',
+    ar: 'تسلسل بريد المسلسل التلفزيوني',
+    book: 'DotCom Secrets',
+    chapter: 'Chapter 6: The Soap Opera Sequence',
+    source: 'dotcom',
+    xp: 100,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">What Makes People Binge Email?</div>
+          <div class="lesson-content">
+            <p>The Soap Opera Sequence (SOS) is your <strong>welcome email series</strong> — the first 5-7 emails someone receives after joining your list. Just like a soap opera that ends each episode on a cliffhanger, your email sequence must make the reader <strong>desperately need to open the next email</strong>.</p>
+            <p>This sequence does 3 critical things: builds your Attractive Character, breaks down false beliefs, and makes the first sale feel natural and inevitable.</p>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 5-Email Soap Opera Structure</div>
+          <ul class="step-list">
+            <li class="step-item">
+              <strong>Email 1: Set the Stage</strong><br>
+              Deliver the lead magnet. Set expectations for what's coming. Create intrigue: "Tomorrow I'm going to share the ONE thing that changed everything for me..." Open loop established.
+            </li>
+            <li class="step-item">
+              <strong>Email 2: High Drama</strong><br>
+              Start with your backstory. The backstory must have high drama — your lowest point, your wall hit. This creates emotional connection. End with a cliffhanger about how you found the solution.
+            </li>
+            <li class="step-item">
+              <strong>Email 3: Epiphany / Solution</strong><br>
+              Introduce your Epiphany Bridge — the realization that changed everything. This is where you seed your offer naturally. The epiphany should be something your product or service helped you achieve.
+            </li>
+            <li class="step-item">
+              <strong>Email 4: Hidden Benefits</strong><br>
+              Go beneath the surface. Talk about the surprising, hidden benefits of your solution that most people don't know about. Break false beliefs. Address the #1 objection.
+            </li>
+            <li class="step-item">
+              <strong>Email 5: Urgency + CTA</strong><br>
+              Tie it all together. Make the offer. Create urgency (genuine scarcity, deadline, or consequence). The sale should feel like a natural next step, not a pitch.
+            </li>
+          </ul>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Email Templates — Fill in the Blanks</div>
+          <div class="template-card">
+            <div class="template-header">📧 Email 1: Set the Stage Template</div>
+            <button class="copy-btn" onclick="copyTemplate(this)">Copy</button>
+            Subject: [FIRST NAME], here's your [lead magnet] + something special<br><br>
+            Hey [FIRST NAME],<br><br>
+            Welcome! You just made a great decision.<br><br>
+            Here's the [lead magnet] you requested: [LINK]<br><br>
+            But I want to give you even more.<br><br>
+            Over the next [X] days, I'm going to share [specific benefit or story arc].<br><br>
+            Tomorrow, I'm going to reveal [intriguing teaser that creates curiosity].<br><br>
+            Stay tuned — this is going to be worth it.<br><br>
+            Talk soon,<br>
+            [YOUR NAME]<br><br>
+            P.S. [Add a curiosity-building PS that makes them look forward to the next email]
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">ما الذي يجعل الناس يتابعون البريد الإلكتروني؟</div>
+          <div class="lesson-content">
+            <p>تسلسل بريد المسلسل التلفزيوني هو <strong>سلسلة رسائل الترحيب</strong> — أول 5-7 رسائل يتلقاها شخص ما بعد الانضمام لقائمتك.</p>
+          </div>
+        </div>`
+    }
+  },
+  'ex-epiphany-bridge': {
+    en: 'The Epiphany Bridge — Selling Through Stories',
+    ar: 'جسر الإلهام — البيع من خلال القصص',
+    book: 'Expert Secrets',
+    chapter: 'Section 2: Creating Belief',
+    source: 'expert',
+    xp: 100,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">The Science of Story-Based Selling</div>
+          <div class="lesson-content">
+            <p>The Epiphany Bridge is Russell Brunson's framework for using stories to help people <strong>experience the same "aha" moment</strong> you had when you discovered your product, service, or idea. Instead of using logic to convince, you use story to create <em>the same emotional feeling</em>.</p>
+            <p>Here's the insight: <strong>people buy emotionally and justify rationally.</strong> The Epiphany Bridge creates the emotion. Logic supports the decision after it's already made.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>Key Insight from Expert Secrets:</strong> "The goal of the Epiphany Bridge script is to create an 'aha' moment in your prospects' minds that gets them excited and ready to buy, without feeling like they are being sold."
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 8-Step Epiphany Bridge Script</div>
+          <ul class="step-list">
+            <li class="step-item"><strong>The Backstory:</strong> Set up your character (you, pre-epiphany). Where were you? What was your struggle? The audience must see themselves in you.</li>
+            <li class="step-item"><strong>The Desire:</strong> What did you want? What was the dream? State the external goal AND the internal desire beneath it.</li>
+            <li class="step-item"><strong>The Wall:</strong> What blocked you? The obstacle that seemed impossible. This creates the dramatic tension.</li>
+            <li class="step-item"><strong>The Epiphany:</strong> The moment of realization. "Then I discovered..." "Then someone showed me..." This is the pivot point of the story.</li>
+            <li class="step-item"><strong>The Plan:</strong> What steps did you take after the epiphany? Shows them the path forward.</li>
+            <li class="step-item"><strong>The Conflict:</strong> What problems did you face implementing the plan? Shows you're real and the path is realistic.</li>
+            <li class="step-item"><strong>The Achievement:</strong> The result. What did you achieve? Must be specific and credible.</li>
+            <li class="step-item"><strong>The Transformation:</strong> Who are you NOW? The transformation that happened beyond the external result. This is the deepest emotional resonance.</li>
+          </ul>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Case Study: Tony Robbins' Epiphany Bridge</div>
+          <div class="info-box">
+            <strong>Backstory:</strong> Grew up poor, family didn't have enough food for Thanksgiving dinner.<br><br>
+            <strong>Wall:</strong> Believed success was for "other people" — not someone like him.<br><br>
+            <strong>Epiphany:</strong> Attended a seminar where someone said: "The quality of your life is the quality of your communication." Realized his internal dialogue was the problem.<br><br>
+            <strong>Achievement:</strong> Built a multi-million dollar empire helping others achieve what he achieved.<br><br>
+            <strong>Transformation:</strong> From boy ashamed of his family to man who feeds millions through charity. The product (personal development) becomes the bridge between before and after.
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">علم البيع القائم على القصص</div>
+          <div class="lesson-content">
+            <p>جسر الإلهام هو إطار راسل برانسون لاستخدام القصص لمساعدة الناس على <strong>تجربة نفس لحظة "آها"</strong> التي مررت بها عند اكتشاف منتجك.</p>
+          </div>
+        </div>`
+    }
+  },
+  'ex-webinar-structure': {
+    en: 'The Perfect Webinar — Structure & Script',
+    ar: 'الندوة المثالية — البنية والنص',
+    book: 'Expert Secrets',
+    chapter: 'Chapter 11: The Perfect Webinar',
+    source: 'expert',
+    xp: 150,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">Why the Perfect Webinar Works</div>
+          <div class="lesson-content">
+            <p>The Perfect Webinar is Russell Brunson's signature presentation framework. It's a <strong>90-minute to 2-hour presentation</strong> designed to take someone from skeptic to buyer using stories, value, and strategic selling.</p>
+            <p>This framework generates hundreds of millions of dollars annually through live webinars, automated webinars, VSLs, and in-person presentations. It works because it systematically dismantles every objection while building massive value before ever mentioning the offer.</p>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 4-Part Perfect Webinar Structure</div>
+          <ul class="step-list">
+            <li class="step-item">
+              <strong>Part 1: Introduction & Big Promise (0-10 min)</strong><br>
+              Your Big Domino statement. One belief, if believed, makes the sale inevitable. Introduce yourself via your Attractive Character backstory. Set expectations for the webinar content.
+            </li>
+            <li class="step-item">
+              <strong>Part 2: The One Thing (10-40 min)</strong><br>
+              Teach ONE big idea that creates the Epiphany. Break their #1 false belief about the "vehicle" (your methodology). Use stories, case studies, and demonstrations. DO NOT teach tactics — teach the transformation.
+            </li>
+            <li class="step-item">
+              <strong>Part 3: The Stack & Close (40-75 min)</strong><br>
+              Build the stack. Reveal each element of your offer one at a time, assigning a value to each. The Stack makes it impossible to say no. Break false beliefs about internal struggles and external obstacles using stories.
+            </li>
+            <li class="step-item">
+              <strong>Part 4: Q&A + Closes (75-90 min)</strong><br>
+              Answer objections in Q&A format. Use future pacing. Close repeatedly — "If you're still watching, here's why you should join today..."
+            </li>
+          </ul>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The Stack Close — The Most Powerful Sales Technique</div>
+          <div class="info-box">
+            <strong>How The Stack Works:</strong><br><br>
+            You never present individual items and prices. You build a stack:<br><br>
+            "You get [Element 1] — value $X... PLUS [Element 2] — value $Y... PLUS [Element 3] — value $Z... All of this would normally cost $[sum]. But today only, you get everything for just $[your price]."<br><br>
+            <strong>Psychology:</strong> The brain anchors to the total stack value ($3,000+) and compares it to your price ($497). The comparison makes your price feel like a steal, not an expense.
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">لماذا تنجح الندوة المثالية</div>
+          <div class="lesson-content">
+            <p>الندوة المثالية هي إطار العرض التقديمي المميز لراسل برانسون. إنها عرض تقديمي مدته <strong>90 دقيقة إلى ساعتين</strong> مصمم لتحويل الشخص من متشكك إلى مشترٍ.</p>
+          </div>
+        </div>`
+    }
+  },
+  'ex-movement-framework': {
+    en: 'Creating a Mass Movement',
+    ar: 'إنشاء حركة جماهيرية',
+    book: 'Expert Secrets',
+    chapter: 'Section 1: Creating Your Mass Movement',
+    source: 'expert',
+    xp: 125,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">Beyond Products — Building a Movement</div>
+          <div class="lesson-content">
+            <p>Russell Brunson's Expert Secrets reveals that the most successful businesses don't sell products — they <strong>lead movements.</strong> Apple didn't sell computers, they led a revolution against conformity. Nike doesn't sell shoes, they sell the belief that everyone is an athlete.</p>
+            <p>A mass movement has three components that separate it from a simple business.</p>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 3 Components of a Mass Movement</div>
+          <div class="framework-grid">
+            <div class="framework-card">
+              <div class="ficon">👤</div>
+              <div class="ftitle">Charismatic Leader</div>
+              <div class="fdesc">The Attractive Character. Someone the audience can project their hopes onto and follow through uncertainty.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">🌅</div>
+              <div class="ftitle">Future-Based Cause</div>
+              <div class="fdesc">A vision of the world as it SHOULD be. What will existence look like when your followers adopt your ideas?</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">🚗</div>
+              <div class="ftitle">New Opportunity</div>
+              <div class="fdesc">NOT an improvement on an existing solution. A completely NEW vehicle — a new mechanism that creates new hope.</div>
+            </div>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The New Opportunity vs. Improvement Offer</div>
+          <div class="highlight-box">
+            <strong>The Most Critical Decision in Expert Secrets:</strong><br><br>
+            <strong>Improvement Offer (WEAK):</strong> "Better SEO strategies to grow your business"<br>
+            ↳ People feel shame (they should have done this already), resistance (they've tried before), and comparison shopping<br><br>
+            <strong>New Opportunity (STRONG):</strong> "The Content Funnel System — a new way to turn social media posts into clients without ads"<br>
+            ↳ People feel hope, excitement, and belief that THIS time will be different because the vehicle is different
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">ما وراء المنتجات — بناء حركة</div>
+          <div class="lesson-content">
+            <p>يكشف كتاب "أسرار الخبير" لراسل برانسون أن أنجح الأعمال لا تبيع منتجات — بل <strong>تقود الحركات.</strong></p>
+          </div>
+        </div>`
+    }
+  },
+  'tr-dream100-intro': {
+    en: 'The Dream 100 Strategy',
+    ar: 'استراتيجية قائمة الحلم المئة',
+    book: 'Traffic Secrets',
+    chapter: 'Chapter 1: Who Is Your Dream Customer?',
+    source: 'traffic',
+    xp: 100,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">The Fastest Path to Traffic</div>
+          <div class="lesson-content">
+            <p>The Dream 100 is the most important concept in Traffic Secrets. The insight: <strong>your dream customers are already congregating somewhere.</strong> They're in someone else's Facebook groups, watching someone else's YouTube channel, reading someone else's email list. Your job is to infiltrate those existing audiences.</p>
+            <p>Instead of building an audience from scratch (which takes years), you <strong>borrow other people's audiences</strong> while simultaneously building your own.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>Russell's Core Principle:</strong> "Who has already congregated my dream customers, and how can I work with them to get in front of their audience?"
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Building Your Dream 100 List</div>
+          <ul class="step-list">
+            <li class="step-item">
+              <strong>Step 1: Define Your Dream Customer</strong><br>
+              Before finding Dream 100 partners, get crystal clear on who your perfect customer is. What are they into? What do they buy? Where do they hang out? What are their dreams and fears?
+            </li>
+            <li class="step-item">
+              <strong>Step 2: Find Their Congregation Points</strong><br>
+              Where do your dream customers hang out? Podcasts they listen to, YouTubers they follow, Facebook groups they're in, email newsletters they subscribe to, blogs they read, influencers they follow.
+            </li>
+            <li class="step-item">
+              <strong>Step 3: Build Your 100-Person List</strong><br>
+              List 100 people/channels/publications that already have your dream customers. These are your Dream 100 — the people you will systematically build relationships with.
+            </li>
+            <li class="step-item">
+              <strong>Step 4: Dig Your Well Before You're Thirsty</strong><br>
+              Start following, commenting, sharing, buying their products BEFORE you pitch anything. Build authentic relationships. This is the "dig" phase — it takes 3-6 months of consistent engagement.
+            </li>
+            <li class="step-item">
+              <strong>Step 5: Outreach & Collaboration</strong><br>
+              Once you've built genuine rapport, propose collaboration: "I'd love to be on your podcast / do a webinar to your list / contribute to your community." Lead with value, not your pitch.
+            </li>
+          </ul>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Dream 100 Worksheet</div>
+          <div class="worksheet">
+            <div class="worksheet-title">🎯 Build Your Dream 100 List</div>
+            <div class="worksheet-field">
+              <div class="field-label">Describe Your Dream Customer (be specific)</div>
+              <textarea class="field-textarea" rows="3" placeholder="e.g. 28-35 year old digital marketers who want to start a side business, currently making $40-80K, frustrated with their 9-5, watch Gary Vee, read marketing blogs..."></textarea>
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Top 10 Podcasts Your Dream Customer Listens To</div>
+              <textarea class="field-textarea" rows="3" placeholder="List them here..."></textarea>
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Top 10 YouTube Channels They Watch</div>
+              <textarea class="field-textarea" rows="3" placeholder="List them here..."></textarea>
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Top 5 Facebook Groups / Communities</div>
+              <textarea class="field-textarea" rows="2" placeholder="List them here..."></textarea>
+            </div>
+          </div>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">أسرع طريق للزيارات</div>
+          <div class="lesson-content">
+            <p>قائمة الحلم المئة هي أهم مفهوم في أسرار الزيارات. الفكرة: <strong>عملاؤك المثاليون يتجمعون بالفعل في مكان ما.</strong></p>
+          </div>
+        </div>`
+    }
+  },
+  'tr-content-strategy': {
+    en: 'Organic Content Strategy — The Publish Every Day Method',
+    ar: 'استراتيجية المحتوى العضوي — طريقة النشر اليومي',
+    book: 'Traffic Secrets',
+    chapter: 'Chapter 7: Fill Your Funnel Organically',
+    source: 'traffic',
+    xp: 125,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">The Content Trifecta</div>
+          <div class="lesson-content">
+            <p>Russell Brunson's organic traffic strategy is built on the concept of <strong>"publishing every single day."</strong> But it's not about quantity — it's about the right system. He calls it the Content Trifecta: a primary content platform, distribution channels, and a list-building mechanism.</p>
+          </div>
+          <div class="framework-grid">
+            <div class="framework-card">
+              <div class="ficon">🎙️</div>
+              <div class="ftitle">Core Content</div>
+              <div class="fdesc">Pick ONE primary platform: blog, podcast, or YouTube. This is where you create long-form content weekly.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">📱</div>
+              <div class="ftitle">Distribution</div>
+              <div class="fdesc">Repurpose core content across Instagram, TikTok, Twitter, Facebook. Each platform gets a native cut.</div>
+            </div>
+            <div class="framework-card">
+              <div class="ficon">📧</div>
+              <div class="ftitle">List Building</div>
+              <div class="fdesc">Every piece of content drives to an opt-in page. You own your email list. You rent social platforms.</div>
+            </div>
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The Daily Content System</div>
+          <ul class="step-list">
+            <li class="step-item"><strong>Weekly Long-Form (1x/week):</strong> Create a podcast episode, YouTube video, or blog post. This is your "hub" content — 20-60 minutes of value on one topic.</li>
+            <li class="step-item"><strong>Daily Micro-Content (7x/week):</strong> Repurpose the weekly content into 7 daily social posts. Clips, quotes, frameworks, questions — one per platform.</li>
+            <li class="step-item"><strong>Daily Email (5x/week):</strong> Send a Seinfeld-style email (story-based, entertaining, includes one call to action).</li>
+            <li class="step-item"><strong>Monthly Dream 100 Collab (1-2x/month):</strong> Appear on someone else's platform (podcast guest, Instagram Live, JV webinar).</li>
+          </ul>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">ثلاثي المحتوى</div>
+          <div class="lesson-content">
+            <p>استراتيجية الزيارات العضوية لراسل برانسون مبنية على مفهوم <strong>"النشر كل يوم."</strong></p>
+          </div>
+        </div>`
+    }
+  },
+  'tr-fb-ads': {
+    en: 'Paid Traffic Mastery — Facebook & Instagram Ads',
+    ar: 'إتقان الإعلانات المدفوعة — فيسبوك وإنستغرام',
+    book: 'Traffic Secrets',
+    chapter: 'Chapter 10: Paid Traffic',
+    source: 'traffic',
+    xp: 150,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">The Paid Traffic Mindset Shift</div>
+          <div class="lesson-content">
+            <p>Russell Brunson's perspective on paid traffic: <strong>"If you can't buy traffic profitably, you can't scale."</strong> Organic traffic is slow. Dream 100 is relationship-dependent. Paid traffic is the only mechanism that lets you turn $1 into $2 at scale — predictably and immediately.</p>
+            <p>But most people fail with paid ads because they treat advertising as an expense, not an investment. The key is understanding your funnel economics first.</p>
+          </div>
+          <div class="highlight-box">
+            <strong>Critical Metric:</strong> EPC (Earnings Per Click). If your funnel earns $2 per click, you can profitably buy any traffic that costs less than $2/click. Know your numbers before you run ads.
+          </div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">The 3-Tier Facebook Ad Strategy</div>
+          <ul class="step-list">
+            <li class="step-item">
+              <strong>Tier 1: Cold Traffic — Awareness Ads</strong><br>
+              Target: Interest-based audiences and Lookalikes<br>
+              Goal: Drive to lead magnet or front-end offer<br>
+              Ad format: Video (hook-heavy), or image with curiosity headline<br>
+              Budget: Start at $10-20/day per ad set
+            </li>
+            <li class="step-item">
+              <strong>Tier 2: Warm Traffic — Retargeting Ads</strong><br>
+              Target: Website visitors, video viewers (50%+), page engagers<br>
+              Goal: Convert to buyer<br>
+              Ad format: Testimonials, case studies, offer-focused<br>
+              Budget: 20-30% of cold traffic budget
+            </li>
+            <li class="step-item">
+              <strong>Tier 3: Hot Traffic — Customer Ads</strong><br>
+              Target: Existing buyers<br>
+              Goal: Upsell, ascend value ladder<br>
+              Ad format: Exclusive offer, VIP treatment<br>
+              Budget: Small — these people already know and trust you
+            </li>
+          </ul>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">التحول في عقلية الإعلانات المدفوعة</div>
+          <div class="lesson-content">
+            <p>منظور راسل برانسون في الإعلانات المدفوعة: <strong>"إذا لم تستطع شراء الزيارات بشكل مربح، فلا يمكنك التوسع."</strong></p>
+          </div>
+        </div>`
+    }
+  },
+  'cap-value-ladder': {
+    en: 'Capstone Part 1 — Design Your Value Ladder',
+    ar: 'المشروع الختامي الجزء 1 — صمم سلم قيمتك',
+    book: 'All Books',
+    chapter: 'Final Project',
+    source: 'project',
+    xp: 200,
+    content: {
+      en: `
+        <div class="capstone-hero">
+          <div class="capstone-crown">🏆</div>
+          <div class="capstone-title">Capstone Project — Part 1</div>
+          <div class="capstone-desc">You are now building a real business asset. This project combines everything from DotCom Secrets, Expert Secrets, and Traffic Secrets into one complete system.</div>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Step 1: Design Your Complete Value Ladder</div>
+          <div class="worksheet">
+            <div class="worksheet-title">📈 Value Ladder Builder</div>
+            <div class="worksheet-field">
+              <div class="field-label">Your Niche / Market</div>
+              <input class="field-input" placeholder="e.g. SMMA for local restaurants">
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Level 1 — Lead Magnet (FREE)</div>
+              <input class="field-input" placeholder="What free thing solves a quick problem? e.g. 'Restaurant Social Media Checklist'">
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Level 2 — Frontend Offer ($7–$97)</div>
+              <input class="field-input" placeholder="e.g. '30-Day Social Media Calendar for Restaurants' - $27">
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Level 3 — Core Offer ($197–$997)</div>
+              <input class="field-input" placeholder="e.g. 'Restaurant Growth Bootcamp' 6-week course - $497">
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Level 4 — High Ticket ($2,000+)</div>
+              <input class="field-input" placeholder="e.g. Done-For-You Social Media Management - $2,000/mo">
+            </div>
+            <div class="worksheet-field">
+              <div class="field-label">Level 5 — Continuity (Recurring)</div>
+              <input class="field-input" placeholder="e.g. 'Restaurant Owners Inner Circle' monthly group - $99/mo">
+            </div>
+          </div>
+        </div>`,
+      ar: `
+        <div class="capstone-hero">
+          <div class="capstone-crown">🏆</div>
+          <div class="capstone-title">المشروع الختامي — الجزء 1</div>
+          <div class="capstone-desc">أنت الآن تبني أصلاً تجارياً حقيقياً. يجمع هذا المشروع كل شيء من الكتب الثلاثة في نظام واحد متكامل.</div>
+        </div>`
+    }
+  },
+  'cap-certificate': {
+    en: 'Certification — Funnel Mastery Graduate',
+    ar: 'الشهادة — خريج إتقان القمع',
+    book: 'All Books',
+    chapter: 'Final Project',
+    source: 'project',
+    xp: 500,
+    content: {
+      en: `
+        <div class="lesson-section">
+          <div class="section-title">Certification Criteria</div>
+          <table class="rubric-table">
+            <tr><th>Component</th><th>Points</th><th>Requirements</th></tr>
+            <tr><td>Value Ladder Design</td><td>20</td><td>All 5 levels defined with pricing and product description</td></tr>
+            <tr><td>Funnel Build</td><td>25</td><td>Complete funnel map with all pages, copy hooks, and CTAs</td></tr>
+            <tr><td>Email Sequence</td><td>20</td><td>5-email Soap Opera Sequence written and ready</td></tr>
+            <tr><td>Traffic Plan</td><td>20</td><td>Dream 100 list + organic + paid strategy outlined</td></tr>
+            <tr><td>Launch Campaign</td><td>15</td><td>30-day launch plan with dates, content, and goals</td></tr>
+          </table>
+        </div>
+        <div class="lesson-section">
+          <div class="section-title">Your Certificate</div>
+          <div class="certificate" id="cert">
+            <div class="cert-corner tl">⭐</div>
+            <div class="cert-corner tr">⭐</div>
+            <div class="cert-corner bl">⭐</div>
+            <div class="cert-corner br">⭐</div>
+            <div class="cert-seal">🏆</div>
+            <div style="color:var(--gold);font-size:0.8rem;text-transform:uppercase;letter-spacing:4px;margin-bottom:8px">Certificate of Completion</div>
+            <div class="cert-title">Funnel Mastery Academy</div>
+            <div class="cert-body">This certifies that</div>
+            <input class="field-input cert-name-input" id="certName" placeholder="Enter Your Name" style="max-width:300px;margin:12px auto;text-align:center;background:transparent;border-color:var(--gold)">
+            <div class="cert-body">has successfully completed the complete curriculum of</div>
+            <div class="cert-title" style="font-size:1.1rem;margin:8px 0">DotCom Secrets • Expert Secrets • Traffic Secrets</div>
+            <div class="cert-body" style="margin-top:16px">Issued by Funnel Mastery Academy | <span id="certDate"></span></div>
+          </div>
+          <button class="complete-btn" onclick="printCert()" style="margin-top:16px">🖨️ Print / Save Certificate</button>
+        </div>`,
+      ar: `
+        <div class="lesson-section">
+          <div class="section-title">معايير الشهادة</div>
+          <table class="rubric-table">
+            <tr><th>المكون</th><th>النقاط</th><th>المتطلبات</th></tr>
+            <tr><td>تصميم سلم القيمة</td><td>20</td><td>تحديد جميع المستويات الخمسة بالأسعار والأوصاف</td></tr>
+            <tr><td>بناء القمع</td><td>25</td><td>خريطة قمع كاملة مع جميع الصفحات والروابط</td></tr>
+            <tr><td>تسلسل البريد الإلكتروني</td><td>20</td><td>كتابة 5 رسائل بريد إلكتروني جاهزة</td></tr>
+            <tr><td>خطة الزيارات</td><td>20</td><td>قائمة الحلم المئة + استراتيجية عضوية ومدفوعة</td></tr>
+            <tr><td>حملة الإطلاق</td><td>15</td><td>خطة إطلاق 30 يوماً</td></tr>
+          </table>
+        </div>`
+    }
+  }
+};
+
+// All lesson IDs for navigation
+const ALL_LESSONS = [];
+CURRICULUM.forEach(book => book.modules.forEach(mod => mod.lessons.forEach(l => ALL_LESSONS.push(l))));
+
+// ===== QUIZ DATA =====
+const QUIZZES = {
+  'dc-what-is-funnel': {
+    questions: [
+      { q: 'What is the primary purpose of a sales funnel compared to a regular website?', options: ['To show all products at once', 'To guide one person toward one specific action', 'To display more information', 'To improve SEO rankings'], correct: 1, explanation: 'A funnel guides a specific person toward one specific goal — unlike a website that offers many options and lets visitors decide.' },
+      { q: 'According to DotCom Secrets, what is the internet primarily?', options: ['A store', 'A search engine', 'A place to find customers', 'An advertising platform'], correct: 2, explanation: 'Russell Brunson\'s core insight: "The internet is not a business — it\'s a place to find your customers." The funnel is the business mechanism.' },
+      { q: 'What is the typical conversion advantage of a funnel over a website?', options: ['1-2% vs 10-40%', '10% vs 20%', '50% vs 75%', 'They are approximately equal'], correct: 0, explanation: 'Traditional websites convert at 1-2%. Sales funnels with proper sequencing achieve 10-40% conversion rates on the same traffic.' }
+    ]
+  },
+  'dc-value-ladder-intro': {
+    questions: [
+      { q: 'What is the core purpose of the Value Ladder?', options: ['To confuse customers with many prices', 'To ascend customers through increasing value and price points', 'To lower prices to be competitive', 'To create more products'], correct: 1, explanation: 'The Value Ladder ascends customers through progressively more valuable offers at higher prices, building trust and delivering value at each level.' },
+      { q: 'Why do most businesses fail to sell high-ticket offers?', options: ['The price is too high', 'They try to sell high-ticket to cold traffic without building trust first', 'High-ticket products are not valuable', 'Marketing is too expensive'], correct: 1, explanation: 'Cold traffic doesn\'t trust you yet. The Value Ladder solves this by building trust progressively before presenting high-ticket offers.' }
+    ]
+  },
+  'tr-dream100-intro': {
+    questions: [
+      { q: 'What is the core insight behind the Dream 100 strategy?', options: ['You need 100 employees', 'Your dream customers are already congregated somewhere else', 'You need to create 100 products', 'You should run 100 ads'], correct: 1, explanation: 'Your dream customers already follow others. The Dream 100 strategy helps you access those existing audiences instead of building from scratch.' },
+      { q: 'What should you do BEFORE pitching to your Dream 100 partners?', options: ['Send a sales email immediately', 'Buy their products and engage authentically for months', 'Offer them a commission', 'Create a joint venture agreement'], correct: 1, explanation: 'You must "dig your well before you\'re thirsty" — engage genuinely, buy their products, and build real relationships before making any request.' }
+    ]
+  }
+};
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').style.opacity = '0';
+    setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+    renderCurriculum();
+    renderDashboard();
+    updateProgress();
+    applyLang();
+    renderAIHistory();
+    document.getElementById('certDate').textContent = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  }, 2200);
+});
+
+// ===== CURRICULUM RENDER =====
+function renderCurriculum() {
+  const el = document.getElementById('curriculum');
+  el.innerHTML = '';
+  CURRICULUM.forEach(book => {
+    const allModLessons = book.modules.flatMap(m => m.lessons);
+    const completedCount = allModLessons.filter(l => STATE.completed.includes(l)).length;
+    const div = document.createElement('div');
+    div.className = 'book-section';
+    div.id = 'book-' + book.id;
+    div.innerHTML = `
+      <div class="book-header" onclick="toggleBook('${book.id}')">
+        <span class="book-icon">${book.icon}</span>
+        <span data-en="${book.en}" data-ar="${book.ar}">${STATE.lang==='en'?book.en:book.ar}</span>
+        <span class="book-badge ${book.badge}" data-en="${book.badgeText.en}" data-ar="${book.badgeText.ar}">${STATE.lang==='en'?book.badgeText.en:book.badgeText.ar}</span>
+        <span class="book-toggle">▼</span>
+      </div>
+      <div class="module-list">
+        ${book.modules.map(mod => `
+          <div id="mod-${mod.id}">
+            <div class="module-item" style="padding-left:16px;font-weight:600;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;cursor:default">
+              <span class="module-icon">${mod.icon}</span>
+              <span data-en="${mod.en}" data-ar="${mod.ar}">${STATE.lang==='en'?mod.en:mod.ar}</span>
+            </div>
+            ${mod.lessons.map(lid => {
+              const lesson = LESSONS[lid];
+              if (!lesson) return '';
+              const done = STATE.completed.includes(lid);
+              return `<div class="module-item ${done?'completed':''}" id="nav-${lid}" onclick="loadLesson('${lid}')" data-en="${lesson.en}" data-ar="${lesson.ar}">
+                <span>📄</span>${STATE.lang==='en'?lesson.en:lesson.ar}
+              </div>`;
+            }).join('')}
+          </div>
+        `).join('')}
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function toggleBook(id) {
+  const sec = document.getElementById('book-' + id);
+  sec.classList.toggle('open');
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  STATE.currentLesson = null;
+  document.getElementById('floatBtns').style.display = 'none';
+  const total = ALL_LESSONS.length;
+  const done = STATE.completed.length;
+  const pct = Math.round((done/total)*100);
+  
+  document.getElementById('contentArea').innerHTML = `
+    <div class="dashboard-hero">
+      <div class="hero-eyebrow" data-en="Welcome to Your Funnel Education" data-ar="مرحباً بك في تعليم القمع">${STATE.lang==='en'?'Welcome to Your Funnel Education':'مرحباً بك في تعليم القمع'}</div>
+      <div class="hero-title">${STATE.lang==='en'?'Master the <span>Funnel Trilogy</span>':'أتقن <span>ثلاثية القمع</span>'}</div>
+      <div class="hero-subtitle" data-en="DotCom Secrets • Expert Secrets • Traffic Secrets — From absolute beginner to funnel master." data-ar="أسرار دوت كوم • أسرار الخبير • أسرار الزيارات — من مبتدئ مطلق إلى خبير القمع.">${STATE.lang==='en'?'DotCom Secrets • Expert Secrets • Traffic Secrets — From absolute beginner to funnel master.':'أسرار دوت كوم • أسرار الخبير • أسرار الزيارات — من مبتدئ مطلق إلى خبير القمع.'}</div>
+      <div class="hero-stats">
+        <div class="stat-item"><div class="stat-num">${done}/${total}</div><div class="stat-label">${STATE.lang==='en'?'Lessons Done':'دروس مكتملة'}</div></div>
+        <div class="stat-item"><div class="stat-num">${pct}%</div><div class="stat-label">${STATE.lang==='en'?'Complete':'مكتمل'}</div></div>
+        <div class="stat-item"><div class="stat-num">${STATE.xp}</div><div class="stat-label">${STATE.lang==='en'?'XP Earned':'نقاط مكتسبة'}</div></div>
+        <div class="stat-item"><div class="stat-num">${STATE.badges.length}</div><div class="stat-label">${STATE.lang==='en'?'Badges':'شارات'}</div></div>
+      </div>
+    </div>
+    <div class="card-grid">
+      <div class="card" onclick="loadLesson('dc-what-is-funnel')">
+        <div class="card-accent" style="background:linear-gradient(90deg,#e94560,#c0392b)"></div>
+        <div class="card-icon">🔴</div>
+        <div class="card-title">${STATE.lang==='en'?'DotCom Secrets':'أسرار دوت كوم'}</div>
+        <div class="card-desc">${STATE.lang==='en'?'Sales Funnels, Value Ladder, Email Sequences':'قمع المبيعات، سلم القيمة، تسلسلات البريد'}</div>
+        <div class="card-progress"><div class="progress-label"><span>Progress</span><span>${Math.round((CURRICULUM[0].modules.flatMap(m=>m.lessons).filter(l=>STATE.completed.includes(l)).length / CURRICULUM[0].modules.flatMap(m=>m.lessons).length)*100)}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${Math.round((CURRICULUM[0].modules.flatMap(m=>m.lessons).filter(l=>STATE.completed.includes(l)).length / CURRICULUM[0].modules.flatMap(m=>m.lessons).length)*100)}%"></div></div></div>
+      </div>
+      <div class="card" onclick="loadLesson('ex-epiphany-bridge')">
+        <div class="card-accent" style="background:linear-gradient(90deg,#7b2ff7,#6c5ce7)"></div>
+        <div class="card-icon">🟣</div>
+        <div class="card-title">${STATE.lang==='en'?'Expert Secrets':'أسرار الخبير'}</div>
+        <div class="card-desc">${STATE.lang==='en'?'Expert Positioning, Stories, Mass Movements':'تموضع الخبير، القصص، الحركات الجماهيرية'}</div>
+        <div class="card-progress"><div class="progress-label"><span>Progress</span><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+      </div>
+      <div class="card" onclick="loadLesson('tr-dream100-intro')">
+        <div class="card-accent" style="background:linear-gradient(90deg,#0984e3,#1a6fa3)"></div>
+        <div class="card-icon">🔵</div>
+        <div class="card-title">${STATE.lang==='en'?'Traffic Secrets':'أسرار الزيارات'}</div>
+        <div class="card-desc">${STATE.lang==='en'?'Dream 100, Organic, Paid Traffic Systems':'قائمة الحلم، العضوي، الإعلانات المدفوعة'}</div>
+        <div class="card-progress"><div class="progress-label"><span>Progress</span><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+      </div>
+      <div class="card" onclick="loadLesson('cap-value-ladder')">
+        <div class="card-accent" style="background:linear-gradient(90deg,#00b894,#00cec9)"></div>
+        <div class="card-icon">🏆</div>
+        <div class="card-title">${STATE.lang==='en'?'Capstone Project':'المشروع الختامي'}</div>
+        <div class="card-desc">${STATE.lang==='en'?'Build your complete funnel empire from scratch':'ابنِ إمبراطورية قمعك الكاملة من الصفر'}</div>
+        <div class="card-progress"><div class="progress-label"><span>Progress</span><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+      </div>
+    </div>
+    <div class="lesson-section">
+      <div class="section-title">${STATE.lang==='en'?'Your Badges':'شاراتك'}</div>
+      <div class="badges-row">
+        ${renderBadges()}
+      </div>
+    </div>
+    <div class="lesson-section">
+      <div class="section-title">${STATE.lang==='en'?'Source Reference Guide':'دليل مصادر المرجع'}</div>
+      <table class="ref-table">
+        <tr><th>${STATE.lang==='en'?'Book':'الكتاب'}</th><th>${STATE.lang==='en'?'Core Topics':'المواضيع الأساسية'}</th><th>${STATE.lang==='en'?'Key Framework':'الإطار الرئيسي'}</th></tr>
+        <tr><td><span class="source-badge src-dotcom">DotCom Secrets</span></td><td>${STATE.lang==='en'?'Sales Funnels, Value Ladder, Email Sequences':'قمع المبيعات، سلم القيمة، تسلسلات البريد'}</td><td>${STATE.lang==='en'?'Hook → Story → Offer':'الخطاف ← القصة ← العرض'}</td></tr>
+        <tr><td><span class="source-badge src-expert">Expert Secrets</span></td><td>${STATE.lang==='en'?'Expert Positioning, Mass Movements, Webinars':'تموضع الخبير، الحركات الجماهيرية، الندوات'}</td><td>${STATE.lang==='en'?'Epiphany Bridge Story':'جسر الإلهام'}</td></tr>
+        <tr><td><span class="source-badge src-traffic">Traffic Secrets</span></td><td>${STATE.lang==='en'?'Dream 100, Organic, Paid Traffic':'قائمة الحلم، العضوي، المدفوع'}</td><td>${STATE.lang==='en'?'Fill Your Funnel System':'نظام ملء قمعك'}</td></tr>
+        <tr><td><span class="source-badge src-practice">Best Practices</span></td><td>${STATE.lang==='en'?'Industry standards, additional teaching examples':'معايير الصناعة، أمثلة تعليمية إضافية'}</td><td>${STATE.lang==='en'?'Supplemental':'تكميلي'}</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+function renderBadges() {
+  const allBadges = [
+    { id: 'first-lesson', icon: '🌱', name: STATE.lang==='en'?'First Step':'الخطوة الأولى', desc: STATE.lang==='en'?'Complete your first lesson':'أكمل درسك الأول' },
+    { id: 'funnel-novice', icon: '🔻', name: STATE.lang==='en'?'Funnel Novice':'مبتدئ القمع', desc: STATE.lang==='en'?'Complete DotCom intro':'أكمل مقدمة دوت كوم' },
+    { id: 'hook-master', icon: '🪝', name: STATE.lang==='en'?'Hook Master':'سيد الخطاف', desc: STATE.lang==='en'?'Complete Hook lesson':'أكمل درس الخطاف' },
+    { id: 'story-teller', icon: '📖', name: STATE.lang==='en'?'Story Teller':'راوي القصص', desc: STATE.lang==='en'?'Complete Epiphany Bridge':'أكمل جسر الإلهام' },
+    { id: 'traffic-boss', icon: '🚦', name: STATE.lang==='en'?'Traffic Boss':'سيد الزيارات', desc: STATE.lang==='en'?'Complete Dream 100':'أكمل قائمة الحلم المئة' },
+    { id: 'graduate', icon: '🎓', name: STATE.lang==='en'?'Graduate':'خريج', desc: STATE.lang==='en'?'Complete all lessons':'أكمل جميع الدروس' },
+  ];
+  return allBadges.map(b => `
+    <div class="badge-item ${STATE.badges.includes(b.id)?'earned':''}">
+      <div class="badge-ico">${b.icon}</div>
+      <div><div class="badge-name">${b.name}</div><div class="badge-desc">${b.desc}</div></div>
+    </div>
+  `).join('');
+}
+
+// ===== LOAD LESSON =====
+function loadLesson(id) {
+  const lesson = LESSONS[id];
+  if (!lesson) { showToast('⚠️', 'Lesson coming soon!'); return; }
+  STATE.currentLesson = id;
+  document.getElementById('floatBtns').style.display = 'flex';
+  
+  // Update sidebar active
+  document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + id);
+  if (navEl) { navEl.classList.add('active'); navEl.scrollIntoView({block:'nearest'}); }
+  
+  const isAr = STATE.lang === 'ar';
+  const content = lesson.content[STATE.lang] || lesson.content['en'];
+  const hasQuiz = QUIZZES[id];
+  const isCompleted = STATE.completed.includes(id);
+  
+  const sourceClass = {'dotcom':'src-dotcom','expert':'src-expert','traffic':'src-traffic','project':'src-practice'}[lesson.source] || 'src-practice';
+  
+  document.getElementById('contentArea').innerHTML = `
+    <div class="lesson-header">
+      <div class="lesson-breadcrumb">${isAr?'الأكاديمية':'Academy'} → <span>${isAr?lesson.ar:lesson.en}</span></div>
+      <h1 class="lesson-title">${isAr?lesson.ar:lesson.en}</h1>
+      <div class="lesson-meta">
+        <span class="source-badge ${sourceClass}">${isAr?lesson.ar.split('—')[0]:lesson.book}</span>
+        <div class="lesson-meta-item">📖 ${lesson.chapter}</div>
+        <div class="lesson-meta-item">⚡ ${lesson.xp} XP</div>
+        ${isCompleted?'<div class="lesson-meta-item" style="color:#00b894">✓ '+(isAr?'مكتمل':'Completed')+'</div>':''}
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'content')">${isAr?'المحتوى':'Content'}</button>
+        ${hasQuiz?`<button class="tab-btn" onclick="switchTab(this,'quiz')">${isAr?'الاختبار':'Quiz'}</button>`:''}
+        <button class="tab-btn" onclick="switchTab(this,'notes')">${isAr?'ملاحظاتي':'My Notes'}</button>
+        <button class="tab-btn" onclick="switchTab(this,'source')">${isAr?'المصدر':'Source'}</button>
+      </div>
+    </div>
+    <div id="tab-content" class="tab-content active">${content}</div>
+    ${hasQuiz?`<div id="tab-quiz" class="tab-content">${renderQuiz(id)}</div>`:''}
+    <div id="tab-notes" class="tab-content">${renderNotesTab()}</div>
+    <div id="tab-source" class="tab-content">${renderSourceTab(lesson)}</div>
+    <div class="divider"></div>
+    <div style="text-align:center">
+      <button class="complete-btn" onclick="completeLesson('${id}')" ${isCompleted?'disabled':''}>
+        ${isCompleted?'✅ '+(isAr?'مكتمل بالفعل':'Already Completed'):'🎯 '+(isAr?'وضع علامة مكتمل':'Mark as Complete')} (+${lesson.xp} XP)
+      </button>
+    </div>
+    <div class="lesson-nav">
+      <button class="nav-lesson-btn" onclick="navigate(-1)">← ${isAr?'الدرس السابق':'Previous Lesson'}</button>
+      <button class="nav-lesson-btn primary" onclick="navigate(1)">${isAr?'الدرس التالي':'Next Lesson'} →</button>
+    </div>
+  `;
+  
+  // Scroll to top
+  document.getElementById('main').scrollTo(0,0);
+  
+  // Close mobile sidebar
+  if (window.innerWidth < 900) document.getElementById('sidebar').classList.remove('mobile-open');
+}
+
+function renderQuiz(id) {
+  const quiz = QUIZZES[id];
+  if (!quiz) return '';
+  const saved = STATE.quizScores[id] || {};
+  const isAr = STATE.lang === 'ar';
+  
+  return `
+    <div class="quiz-container">
+      <div class="quiz-header">
+        <div class="quiz-title">${isAr?'اختبار المعرفة':'Knowledge Check'}</div>
+        ${saved.score !== undefined ? `<div class="quiz-score-badge">${saved.score}/${quiz.questions.length} ${isAr?'صحيح':'correct'}</div>` : ''}
+      </div>
+      ${quiz.questions.map((q,qi) => `
+        <div class="question-block">
+          <div class="question-text">${qi+1}. ${q.q}</div>
+          <ul class="options-list">
+            ${q.options.map((opt,oi) => `
+              <li class="option-item ${saved.answers&&saved.answers[qi]===oi?(oi===q.correct?'correct':'wrong'):(oi===q.correct&&saved.answers?'correct':'')}" 
+                onclick="selectOption(this,${qi},${oi},'${id}')" ${saved.answers?'disabled':''}>
+                ${String.fromCharCode(65+oi)}. ${opt}
+              </li>
+            `).join('')}
+          </ul>
+          <div class="quiz-feedback ${saved.answers&&saved.answers[qi]===q.correct?'feedback-correct':'feedback-wrong'}" style="display:${saved.answers?'block':'none'}">
+            ${saved.answers&&saved.answers[qi]===q.correct?'✅ Correct! ':'❌ Incorrect. '} ${q.explanation}
+          </div>
+        </div>
+      `).join('')}
+      <button class="quiz-btn" onclick="submitQuiz('${id}')" ${saved.answers?'disabled':''}>
+        ${saved.answers?(isAr?'تم الإرسال':'Submitted'):(isAr?'إرسال الإجابات':'Submit Answers')}
+      </button>
+    </div>
+  `;
+}
+
+let selectedAnswers = {};
+function selectOption(el, qi, oi, lid) {
+  const items = el.parentElement.querySelectorAll('.option-item');
+  items.forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  if (!selectedAnswers[lid]) selectedAnswers[lid] = {};
+  selectedAnswers[lid][qi] = oi;
+}
+
+function submitQuiz(lid) {
+  const quiz = QUIZZES[lid];
+  const answers = selectedAnswers[lid] || {};
+  let score = 0;
+  quiz.questions.forEach((q,qi) => { if (answers[qi] === q.correct) score++; });
+  STATE.quizScores[lid] = { score, answers };
+  localStorage.setItem('fma_quiz', JSON.stringify(STATE.quizScores));
+  loadLesson(lid);
+  setTimeout(() => {
+    document.querySelectorAll('.tab-btn').forEach(b => { if (b.textContent.includes('Quiz') || b.textContent.includes('اختبار')) b.click(); });
+  }, 100);
+  showToast('📊', `Quiz complete! Score: ${score}/${quiz.questions.length}`);
+  addXP(score * 25);
+}
+
+function renderNotesTab() {
+  const notes = STATE.notes.filter(n => n.lesson === STATE.currentLesson);
+  const isAr = STATE.lang === 'ar';
+  return `
+    <div>
+      <h3 style="margin-bottom:16px">${isAr?'ملاحظاتي في هذا الدرس':'My Notes for This Lesson'}</h3>
+      ${notes.length === 0 ? `<p style="color:var(--text-muted)">${isAr?'لا توجد ملاحظات بعد. أضف ملاحظة من لوحة الملاحظات.':'No notes yet. Open the Notes panel to add some.'}</p>` : notes.map(n => `
+        <div class="note-card">
+          <div>${n.text}</div>
+          <div class="note-meta">${new Date(n.ts).toLocaleDateString()}</div>
+        </div>
+      `).join('')}
+      <button class="quiz-btn" onclick="toggleNotes()" style="margin-top:16px">📝 ${isAr?'فتح لوحة الملاحظات':'Open Notes Panel'}</button>
+    </div>
+  `;
+}
+
+function renderSourceTab(lesson) {
+  const isAr = STATE.lang === 'ar';
+  return `
+    <div class="info-box">
+      <h3 style="margin-bottom:12px">📚 ${isAr?'المصادر والمراجع':'Sources & References'}</h3>
+      <p><strong>${isAr?'الكتاب':'Book'}:</strong> ${lesson.book}</p>
+      <p><strong>${isAr?'الفصل':'Chapter'}:</strong> ${lesson.chapter}</p>
+      <div class="divider"></div>
+      <p style="font-size:0.85rem;color:var(--text-muted)">
+        ${isAr?'هذا الدرس يتضمن:':'This lesson includes:'}
+      </p>
+      <ul style="margin:8px 0 0 20px;font-size:0.85rem;color:var(--text-muted)">
+        <li>${isAr?'مفاهيم مباشرة من الكتاب':'Direct concepts from the book'}</li>
+        <li>${isAr?'أفضل ممارسات الصناعة':'Industry best practices'}</li>
+        <li>${isAr?'أمثلة تعليمية إضافية':'Additional teaching examples'}</li>
+      </ul>
+      <div class="divider"></div>
+      <p style="font-size:0.85rem"><strong>${isAr?'للمزيد من المعلومات:':'For more information:'}</strong></p>
+      <p style="font-size:0.82rem;color:var(--text-muted)">${isAr?'يُوصى بقراءة الكتب الأصلية لمعرفة أعمق. هذه الدورة للأغراض التعليمية.':'Reading the original books is recommended for deeper understanding. This course is for educational purposes.'}</p>
+    </div>
+  `;
+}
+
+function switchTab(btn, tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+}
+
+// ===== COMPLETE LESSON =====
+function completeLesson(id) {
+  if (STATE.completed.includes(id)) return;
+  STATE.completed.push(id);
+  localStorage.setItem('fma_completed', JSON.stringify(STATE.completed));
+  const lesson = LESSONS[id];
+  if (lesson) addXP(lesson.xp);
+  updateProgress();
+  checkBadges(id);
+  renderCurriculum();
+  showToast('🎉', `Lesson completed! +${lesson?.xp||50} XP`);
+  const btn = document.querySelector('.complete-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '✅ Completed!'; }
+  const navEl = document.getElementById('nav-' + id);
+  if (navEl) navEl.classList.add('completed');
+}
+
+function addXP(amount) {
+  STATE.xp += amount;
+  document.getElementById('xpDisplay').textContent = '⚡ ' + STATE.xp + ' XP';
+}
+
+function updateProgress() {
+  const total = ALL_LESSONS.length;
+  const done = STATE.completed.length;
+  const pct = Math.round((done/total)*100);
+  const fill = document.getElementById('progressFill');
+  const pctEl = document.getElementById('progressPct');
+  const det = document.getElementById('progressDetail');
+  if (fill) fill.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (det) det.textContent = `${done} / ${total} ${STATE.lang==='en'?'lessons':'دروس'}`;
+}
+
+function checkBadges(id) {
+  const checks = [
+    { id: 'first-lesson', test: () => STATE.completed.length >= 1 },
+    { id: 'funnel-novice', test: () => STATE.completed.includes('dc-what-is-funnel') },
+    { id: 'hook-master', test: () => STATE.completed.includes('dc-hook') },
+    { id: 'story-teller', test: () => STATE.completed.includes('ex-epiphany-bridge') },
+    { id: 'traffic-boss', test: () => STATE.completed.includes('tr-dream100-intro') },
+    { id: 'graduate', test: () => STATE.completed.length >= ALL_LESSONS.length - 2 },
+  ];
+  checks.forEach(c => {
+    if (!STATE.badges.includes(c.id) && c.test()) {
+      STATE.badges.push(c.id);
+      localStorage.setItem('fma_badges', JSON.stringify(STATE.badges));
+      showToast('🏅', `Badge unlocked: ${c.id.replace(/-/g,' ')}!`);
+    }
+  });
+}
+
+// ===== NAVIGATION =====
+function navigate(dir) {
+  const idx = ALL_LESSONS.indexOf(STATE.currentLesson);
+  if (idx === -1) return;
+  const next = ALL_LESSONS[idx + dir];
+  if (next) loadLesson(next);
+}
+
+// ===== SEARCH =====
+function searchLessons(q) {
+  const term = q.toLowerCase();
+  document.querySelectorAll('.module-item[id^="nav-"]').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.style.display = !term || text.includes(term) ? '' : 'none';
+  });
+  if (term) {
+    document.querySelectorAll('.book-section').forEach(el => el.classList.add('open'));
+  }
+}
+
+// ===== THEME =====
+function toggleTheme() {
+  STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', STATE.theme);
+  document.getElementById('themeBtn').textContent = STATE.theme === 'dark' ? '🌙' : '☀️';
+}
+
+// ===== LANGUAGE =====
+function toggleLang() {
+  STATE.lang = STATE.lang === 'en' ? 'ar' : 'en';
+  document.documentElement.lang = STATE.lang;
+  document.documentElement.dir = STATE.lang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('langBtn').textContent = STATE.lang === 'en' ? '🌐 AR' : '🌐 EN';
+  applyLang();
+  renderCurriculum();
+  if (STATE.currentLesson) loadLesson(STATE.currentLesson);
+  else renderDashboard();
+}
+
+function applyLang() {
+  const isAr = STATE.lang === 'ar';
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const key = isAr ? 'ar' : 'en';
+    if (el.dataset[key]) el.textContent = el.dataset[key];
+  });
+  document.querySelectorAll('[data-en-placeholder]').forEach(el => {
+    const key = isAr ? 'ar' : 'en';
+    if (el.dataset[key + 'Placeholder']) el.placeholder = el.dataset[key + 'Placeholder'];
+  });
+  const noteInput = document.getElementById('noteInput');
+  if (noteInput) noteInput.placeholder = isAr ? 'أضف ملاحظة...' : 'Add a note about this lesson...';
+}
+
+// ===== NOTES =====
+function toggleNotes() {
+  document.getElementById('notesPanel').classList.toggle('open');
+  renderNotesList();
+}
+
+function renderNotesList() {
+  const list = document.getElementById('notesList');
+  if (!list) return;
+  const notes = STATE.notes.filter(n => !STATE.currentLesson || n.lesson === STATE.currentLesson);
+  list.innerHTML = notes.length === 0 
+    ? `<p style="color:var(--text-muted);font-size:0.85rem">No notes yet.</p>` 
+    : notes.reverse().map((n,i) => `
+      <div class="note-card">
+        <div>${n.text}</div>
+        <div class="note-meta">${new Date(n.ts).toLocaleDateString()} — ${n.lesson} <span class="note-delete" onclick="deleteNote(${i})">✕</span></div>
+      </div>
+    `).join('');
+}
+
+function saveNote() {
+  const input = document.getElementById('noteInput');
+  const text = input?.value?.trim();
+  if (!text) return;
+  STATE.notes.push({ text, lesson: STATE.currentLesson || 'general', ts: Date.now() });
+  localStorage.setItem('fma_notes', JSON.stringify(STATE.notes));
+  if (input) input.value = '';
+  renderNotesList();
+  showToast('📝', 'Note saved!');
+}
+
+function deleteNote(idx) {
+  STATE.notes.splice(idx, 1);
+  localStorage.setItem('fma_notes', JSON.stringify(STATE.notes));
+  renderNotesList();
+}
+
+// ===== AI TUTOR (Groq · llama-3.3-70b-versatile, via Netlify Function proxy) =====
+// This calls YOUR Netlify Function, not Groq directly — so the real Groq key stays
+// server-side and is never exposed to visitors. The function lives at
+// netlify/functions/groq-proxy.js and Netlify auto-routes it to the path below
+// once deployed, on whatever domain the site ends up on.
+const PROXY_API_URL = '/.netlify/functions/groq-proxy';
+const AI_HISTORY_KEY = 'fma_ai_history';
+const MAX_HISTORY_MESSAGES = 16; // ~8 user/assistant turns kept, to stay under Groq's free-tier token limits
+
+function toggleAI() {
+  document.getElementById('aiPanel').classList.toggle('open');
+}
+
+function loadAIHistory() {
+  try { return JSON.parse(localStorage.getItem(AI_HISTORY_KEY)) || []; }
+  catch (e) { return []; }
+}
+
+function saveAIHistory(history) {
+  localStorage.setItem(AI_HISTORY_KEY, JSON.stringify(history));
+}
+
+// Clears the saved conversation (call this when Groq reports the context is too long,
+// or whenever the student wants to start over).
+function resetAIChat() {
+  localStorage.removeItem(AI_HISTORY_KEY);
+  const msgs = document.getElementById('aiMessages');
+  if (msgs) msgs.innerHTML = '';
+  addAIMessage(STATE.lang === 'ar'
+    ? '👋 محادثة جديدة! ماذا تريد أن تتعلم؟'
+    : "👋 New chat started! What do you want to master?", 'bot');
+  showToast('🗑️', STATE.lang === 'ar' ? 'بدأت محادثة جديدة' : 'Started a new chat');
+}
+
+function renderAIHistory() {
+  const history = loadAIHistory();
+  const msgs = document.getElementById('aiMessages');
+  if (!msgs || history.length === 0) return;
+  msgs.innerHTML = '';
+  history.forEach(m => addAIMessage(m.content, m.role === 'user' ? 'user' : 'bot'));
+}
+
+// Strips HTML down to plain text so lesson content can be fed into the system prompt cheaply
+function stripHtml(html) {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+}
+
+// Grounds the tutor in the actual course content: the full current lesson, plus
+// short summaries of every other written lesson. Kept compact on purpose —
+// Groq's free tier caps usable tokens per request, so this is not the whole site's HTML,
+// just the substance of it.
+function buildSystemPrompt() {
+  const lang = STATE.lang === 'ar' ? 'ar' : 'en';
+  let prompt = `You are an expert marketing coach and tutor inside "Funnel Mastery Academy," a self-paced course built on Russell Brunson's books: DotCom Secrets, Expert Secrets, and Traffic Secrets. Use the course material below as your primary source of truth, in your own words — be concise, practical, and speak like a direct mentor focused on actionable advice. If the student writes in Arabic, respond fully in Arabic. Keep replies under 200 words unless asked for more detail.\n\n`;
+
+  const current = STATE.currentLesson && LESSONS[STATE.currentLesson];
+  if (current) {
+    const text = stripHtml(current.content?.[lang] || current.content?.en || '').slice(0, 3000);
+    prompt += `STUDENT IS CURRENTLY VIEWING — "${current[lang] || current.en}" (${current.book}, ${current.chapter}):\n${text}\n\n`;
+  }
+
+  const summaries = Object.entries(LESSONS)
+    .filter(([id]) => id !== STATE.currentLesson)
+    .map(([id, l]) => {
+      const text = stripHtml(l.content?.[lang] || l.content?.en || '').slice(0, 220);
+      return `• ${l[lang] || l.en} (${l.book}): ${text}`;
+    });
+  if (summaries.length) {
+    prompt += `OTHER WRITTEN LESSONS IN THIS COURSE:\n${summaries.join('\n')}\n\n`;
+  }
+
+  prompt += `Most of the curriculum is still being written. If asked about a lesson not summarized above, answer from your own general knowledge of Brunson's frameworks and say it's general guidance rather than this course's exact lesson content.`;
+  return prompt;
+}
+
+async function sendAIMessage() {
+  const input = document.getElementById('aiInput');
+  const msg = input?.value?.trim();
+  if (!msg) return;
+
+  addAIMessage(msg, 'user');
+  input.value = '';
+
+  const history = loadAIHistory();
+  history.push({ role: 'user', content: msg });
+  const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES);
+
+  const thinking = document.createElement('div');
+  thinking.className = 'ai-msg bot';
+  thinking.textContent = STATE.lang === 'ar' ? '⏳ أفكر...' : '⏳ Thinking...';
+  document.getElementById('aiMessages').appendChild(thinking);
+  scrollAI();
+
+  try {
+    const res = await fetch(PROXY_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'system', content: buildSystemPrompt() }, ...trimmedHistory]
+      })
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      const errMsg = (errBody.error?.message || '').toLowerCase();
+      const isContextOverflow = res.status === 400 &&
+        (errMsg.includes('context') || errMsg.includes('too long') || errMsg.includes('maximum') || errMsg.includes('reduce'));
+      const isRateLimit = res.status === 429;
+
+      if (isContextOverflow) {
+        thinking.textContent = STATE.lang === 'ar'
+          ? '⚠️ أصبحت هذه المحادثة طويلة جداً على النموذج. اضغط 🗑️ "محادثة جديدة" أعلى النافذة، ثم أعد سؤالك.'
+          : '⚠️ This chat has gotten too long for the model to handle. Tap the 🗑️ button above to start a new chat, then ask again.';
+      } else if (isRateLimit) {
+        thinking.textContent = STATE.lang === 'ar'
+          ? '⏳ تجاوزت الحد المسموح من الطلبات المجانية. انتظر دقيقة وحاول مجدداً.'
+          : "⏳ Daily free quota reached. Try again in a bit.";
+      } else {
+        thinking.textContent = STATE.lang === 'ar' ? 'خطأ في الاتصال. حاول مجدداً.' : 'Connection error. Please try again.';
+      }
+      scrollAI();
+      return;
+    }
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content?.trim() ||
+      (STATE.lang === 'ar' ? 'لم أتمكن من الحصول على رد.' : 'Sorry, I could not get a response.');
+    thinking.textContent = reply;
+
+    history.push({ role: 'assistant', content: reply });
+    saveAIHistory(history.slice(-MAX_HISTORY_MESSAGES));
+  } catch (e) {
+    thinking.textContent = STATE.lang === 'ar' ? 'خطأ في الاتصال. حاول مجدداً.' : 'Connection error. Please try again.';
+  }
+  scrollAI();
+}
+
+function aiAsk(q) {
+  const input = document.getElementById('aiInput');
+  if (input) { input.value = q; sendAIMessage(); }
+}
+
+function addAIMessage(text, type) {
+  const msgs = document.getElementById('aiMessages');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.className = `ai-msg ${type}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  scrollAI();
+}
+
+function scrollAI() {
+  const msgs = document.getElementById('aiMessages');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+document.getElementById('aiInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendAIMessage(); });
+
+// ===== TOAST =====
+function showToast(icon, msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ===== ACCORDION =====
+function toggleAccordion(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+// ===== COPY TEMPLATE =====
+function copyTemplate(btn) {
+  const card = btn.parentElement;
+  const text = card.innerText.replace('Copy All\n','').replace('Copy\n','');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ===== MOBILE SIDEBAR =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+}
+
+// ===== CERT =====
+function printCert() {
+  window.print();
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('notesPanel').classList.remove('open');
+    document.getElementById('aiPanel').classList.remove('open');
+    document.getElementById('sidebar').classList.remove('mobile-open');
+  }
+  if (e.altKey && e.key === 'ArrowRight') navigate(1);
+  if (e.altKey && e.key === 'ArrowLeft') navigate(-1);
+});
+
+// Click outside sidebar to close on mobile
+document.getElementById('main').addEventListener('click', () => {
+  if (window.innerWidth < 900) document.getElementById('sidebar').classList.remove('mobile-open');
+});
+
+// Open first book by default
+setTimeout(() => {
+  toggleBook('dotcom');
+}, 100);
+</script>
+</body>
+</html>
