@@ -425,7 +425,27 @@ function saveNote(){const input=document.getElementById('noteInput');const text=
 
 function deleteNote(idx){STATE.notes.splice(idx,1);localStorage.setItem('fma_notes',JSON.stringify(STATE.notes));renderNotesList();}
 
-const PROXY_API_URL='/.netlify/functions/groq-proxy';const POLL_API_URL='/.netlify/functions/groq-proxy-poll';const AI_HISTORY_KEY='fma_ai_history';const MAX_HISTORY_MESSAGES=16;
+const PROXY_API_URL='/.netlify/functions/groq-proxy';const HF_SPACE_BASE='https://mohamedoudha1312-funnelbookislemkb.hf.space';const AI_HISTORY_KEY='fma_ai_history';const MAX_HISTORY_MESSAGES=16;
+
+function pollHFSpace(eventId) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => { es.close(); reject(new Error('Request timed out. Please try again.')); }, 120000);
+    const es = new EventSource(`${HF_SPACE_BASE}/gradio_api/call/chat/${eventId}`);
+    es.addEventListener('complete', (e) => {
+      clearTimeout(timeout); es.close();
+      try {
+        const parsed = JSON.parse(e.data);
+        resolve(Array.isArray(parsed) ? parsed[0] : "I couldn't find an answer.");
+      } catch { resolve("I couldn't find an answer."); }
+    });
+    es.addEventListener('error', (e) => {
+      if (es.readyState === EventSource.CLOSED) {
+        clearTimeout(timeout);
+        reject(new Error('The knowledge base failed to respond. Please try again.'));
+      }
+    });
+  });
+}
 
 function toggleAI(){document.getElementById('aiPanel').classList.toggle('open');}
 
@@ -494,58 +514,16 @@ async function sendAIMessage() {
     // Queued — Groq was unavailable, the RAG fallback is processing
     if (submitRes.status === 202 && submitData.event_id) {
       const eventId = submitData.event_id;
-      const isFallback = submitData.engine === 'rag-fallback';
-      let attempts = 0;
-      let errorStreak = 0;
-      const maxAttempts = 120;
-      const maxErrorStreak = 5;
-
-      thinking.textContent = isFallback
-        ? '🔄 Primary AI is busy — switching to the course knowledge base... (can take up to 2 minutes on a cold start)'
-        : '⏳ Waiting for response...';
+      thinking.textContent = '🔄 Primary AI is busy — switching to the course knowledge base...';
       scrollAI();
 
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        let pollRes, pollData;
-        try {
-          pollRes = await fetch(`${POLL_API_URL}?event_id=${eventId}`);
-          pollData = await pollRes.json();
-        } catch (pollErr) {
-          errorStreak++;
-          if (errorStreak >= maxErrorStreak) {
-            thinking.textContent = '⚠️ Lost connection while waiting. Please try again.';
-            scrollAI();
-            return;
-          }
-          attempts++;
-          continue;
-        }
-
-        if (pollData.status === 'complete') {
-          thinking.textContent = pollData.response;
-          appendToHistory(msg, pollData.response);
-          scrollAI();
-          return;
-        }
-
-        if (pollRes.status >= 400 || pollData.error) {
-          errorStreak++;
-          if (errorStreak >= maxErrorStreak) {
-            thinking.textContent = '⚠️ ' + (pollData.error?.message || 'The knowledge base failed to respond.');
-            scrollAI();
-            return;
-          }
-          attempts++;
-          continue;
-        }
-
-        errorStreak = 0;
-        attempts++;
+      try {
+        const answer = await pollHFSpace(eventId);
+        thinking.textContent = answer;
+        appendToHistory(msg, answer);
+      } catch (err) {
+        thinking.textContent = '⚠️ ' + (err.message || 'The knowledge base failed to respond.');
       }
-      
-      thinking.textContent = '⏳ Request timed out. Please try again in a moment.';
       scrollAI();
       return;
     }
