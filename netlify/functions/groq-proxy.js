@@ -1,9 +1,9 @@
-// ===== Groq Proxy — Netlify Function =====
+// ===== Hugging Face RAG Proxy — Netlify Function =====
 // This runs on Netlify's servers, NOT in the visitor's browser.
-// Your real Groq API key lives in a Netlify environment variable
-// (set it in Site configuration > Environment variables), never in this file.
+// Your Hugging Face Space is public, so no API key is needed.
+// If you make it private, add HF_API_TOKEN to Netlify environment variables.
 //
-// Once deployed, this is reachable at: /.netlify/functions/groq-proxy
+// Once deployed, this is reachable at: /.netlify/functions/rag-proxy
 
 exports.handler = async (event) => {
   const corsHeaders = {
@@ -33,35 +33,74 @@ exports.handler = async (event) => {
     };
   }
 
-  // Only forward what we expect — never let the client dictate the model
-  // or smuggle other params through to your Groq account.
-  const groqPayload = {
-    model: 'llama-3.3-70b-versatile',
-    max_tokens: 700,
-    messages: Array.isArray(body.messages) ? body.messages : []
+  // === Your HF Space API endpoint ===
+  // For Gradio 5.x, use the /api/predict endpoint
+  // If your app uses a different API name, change it here
+  const HF_API_URL = 'https://mohamedoudha1312-FunnelBOOKiSLEMKb.hf.space/api/predict';
+
+  // === Build the payload for HF Spaces ===
+  // Gradio expects: { "data": [input1, input2, ...] }
+  // Adjust based on your RAG app's expected inputs
+  // If your app expects a single string input:
+  const hfPayload = {
+    data: [body.query || body.message || body.prompt || "Hello, what is funnel mastery?"]
   };
 
   try {
-    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const hfRes = await fetch(HF_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+        // If your Space is private, uncomment this and add HF_API_TOKEN to Netlify env:
+         'Authorization': `Bearer ${process.env.HF_API_TOKEN}`
       },
-      body: JSON.stringify(groqPayload)
+      body: JSON.stringify(hfPayload)
     });
 
-    const text = await groqRes.text();
+    // Get the response from Gradio
+    const result = await hfRes.text();
+    
+    // Parse the response if it's JSON
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(result);
+    } catch (e) {
+      // If not JSON, return as-is
+      return {
+        statusCode: hfRes.status,
+        headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+        body: result
+      };
+    }
+
+    // Extract the actual response from Gradio's format
+    // Gradio returns: { "data": [response] }
+    let responseData = parsedResult;
+    if (parsedResult.data && Array.isArray(parsedResult.data)) {
+      responseData = parsedResult.data[0];
+    } else if (parsedResult.error) {
+      return {
+        statusCode: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: parsedResult.error })
+      };
+    }
+
     return {
-      statusCode: groqRes.status,
+      statusCode: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: text
+      body: JSON.stringify({ 
+        success: true,
+        response: responseData
+      })
     };
+
   } catch (e) {
+    console.error('HF API Error:', e);
     return {
       statusCode: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: { message: 'Upstream request failed' } })
+      body: JSON.stringify({ error: { message: 'Upstream request failed: ' + e.message } })
     };
   }
 };
