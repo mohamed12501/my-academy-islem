@@ -8,7 +8,20 @@ exports.handler = async (event, context) => {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
-
+ if (event.httpMethod === 'GET') {
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        status: 'ok', 
+        message: 'Proxy is working!',
+        env: {
+          hasToken: !!process.env.HF_API_TOKEN,
+          nodeVersion: process.version
+        }
+      })
+    };
+  }
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
