@@ -1,32 +1,29 @@
 // netlify/functions/groq-proxy.js
 
-const { Client } = require('@gradio/client');
-
 exports.handler = async (event, context) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
- if (event.httpMethod === 'GET') {
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        status: 'ok', 
-        message: 'Proxy is working!',
-        env: {
-          hasToken: !!process.env.HF_API_TOKEN,
-          nodeVersion: process.version
-        }
-      })
-    };
-  }
+
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: ''
+    };
+  }
+
+  if (event.httpMethod === 'GET') {
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'ok',
+        message: 'Proxy is working!',
+        hasToken: !!process.env.HF_API_TOKEN
+      })
     };
   }
 
@@ -66,11 +63,19 @@ exports.handler = async (event, context) => {
 
   const HF_TOKEN = process.env.HF_API_TOKEN;
 
-  // Log for debugging
-  console.log('Processing request for message:', userMessage?.slice(0, 50));
+  if (!HF_TOKEN) {
+    console.error('Missing HF_API_TOKEN');
+    return {
+      statusCode: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Server configuration error: Missing API token' })
+    };
+  }
 
   try {
-    // Connect to your Space
+    // Dynamic import for ES Module (works in CommonJS)
+    const { Client } = await import('@gradio/client');
+
     console.log('Connecting to HF Space...');
     const client = await Client.connect(
       "mohamedoudha1312/FunnelBOOKiSLEMKb",
@@ -78,12 +83,11 @@ exports.handler = async (event, context) => {
     );
     console.log('Connected successfully');
 
-    // Call the /chat endpoint
     console.log('Calling /chat endpoint...');
     const result = await client.predict("/chat", {
       message: userMessage
     });
-    console.log('Got result:', result?.data?.slice(0, 100));
+    console.log('Got result');
 
     const responseData = result?.data || "I couldn't find an answer.";
 
@@ -101,17 +105,14 @@ exports.handler = async (event, context) => {
     };
 
   } catch (e) {
-    console.error('Error details:', {
-      message: e.message,
-      stack: e.stack,
-      name: e.name
-    });
-    
+    console.error('Error:', e.message);
+    console.error('Stack:', e.stack);
+
     return {
       statusCode: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        error: { 
+        error: {
           message: 'Request failed: ' + e.message,
           type: e.name || 'UnknownError'
         }
