@@ -59,7 +59,7 @@ exports.handler = async (event) => {
   try {
     // 1. Send request to Gradio Chat endpoint
     const startRes = await fetch(
-      "https://mohamedoudha1312-funnelbookislemkb.hf.space/call/chat",
+      "https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat",
       {
         method: "POST",
         headers: {
@@ -91,7 +91,7 @@ exports.handler = async (event) => {
 
     // 2. Wait for result
     const resultRes = await fetch(
-      `https://mohamedoudha1312-funnelbookislemkb.hf.space/call/chat/${eventId}`,
+      `https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat/${eventId}`,
       {
         headers: {
           Authorization: `Bearer ${HF_TOKEN}`,
