@@ -3,16 +3,12 @@
 exports.handler = async (event, context) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
 
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: ''
-    };
+    return { statusCode: 200, headers: corsHeaders, body: '' };
   }
 
   if (event.httpMethod === 'GET') {
@@ -46,7 +42,6 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // Extract user message
   let userMessage = "Hello, what is funnel mastery?";
   if (body.messages && Array.isArray(body.messages)) {
     const lastUserMsg = body.messages.filter(m => m.role === 'user').pop();
@@ -63,31 +58,18 @@ exports.handler = async (event, context) => {
 
   const HF_TOKEN = process.env.HF_API_TOKEN;
 
-  if (!HF_TOKEN) {
-    console.error('Missing HF_API_TOKEN');
-    return {
-      statusCode: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Server configuration error: Missing API token' })
-    };
-  }
-
   try {
-    // Dynamic import for ES Module (works in CommonJS)
+    // Use dynamic import for ES Module
     const { Client } = await import('@gradio/client');
 
-    console.log('Connecting to HF Space...');
     const client = await Client.connect(
       "mohamedoudha1312/FunnelBOOKiSLEMKb",
       { token: HF_TOKEN }
     );
-    console.log('Connected successfully');
 
-    console.log('Calling /chat endpoint...');
     const result = await client.predict("/chat", {
       message: userMessage
     });
-    console.log('Got result');
 
     const responseData = result?.data || "I couldn't find an answer.";
 
@@ -105,15 +87,17 @@ exports.handler = async (event, context) => {
     };
 
   } catch (e) {
-    console.error('Error:', e.message);
-    console.error('Stack:', e.stack);
-
+    // Check if it's a timeout error
+    const isTimeout = e.message?.includes('timeout') || e.message?.includes('abort');
+    
     return {
       statusCode: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         error: {
-          message: 'Request failed: ' + e.message,
+          message: isTimeout 
+            ? 'The RAG app is warming up (cold start). Please wait 30 seconds and try again.'
+            : 'Request failed: ' + e.message,
           type: e.name || 'UnknownError'
         }
       })
