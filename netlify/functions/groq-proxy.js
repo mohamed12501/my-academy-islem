@@ -1,5 +1,7 @@
 // netlify/functions/groq-proxy.js
 
+const { Client } = require('@gradio/client');
+
 exports.handler = async (event, context) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -49,115 +51,57 @@ exports.handler = async (event, context) => {
     userMessage = body.prompt;
   }
 
-  // ===== CORRECT ENDPOINT FOR YOUR APP =====
-  // Your app uses gr.ChatInterface, so the endpoint is /gradio_api/call/chat
-  const HF_SUBMIT_URL = 'https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat';
-
-  // Get token from environment variable
   const HF_TOKEN = process.env.HF_API_TOKEN;
 
+  // Log for debugging
+  console.log('Processing request for message:', userMessage?.slice(0, 50));
+
   try {
-    // Step 1: Submit the request
-    const submitRes = await fetch(HF_SUBMIT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})
-      },
-      body: JSON.stringify({ data: [userMessage] })
+    // Connect to your Space
+    console.log('Connecting to HF Space...');
+    const client = await Client.connect(
+      "mohamedoudha1312/FunnelBOOKiSLEMKb",
+      { token: HF_TOKEN }
+    );
+    console.log('Connected successfully');
+
+    // Call the /chat endpoint
+    console.log('Calling /chat endpoint...');
+    const result = await client.predict("/chat", {
+      message: userMessage
     });
+    console.log('Got result:', result?.data?.slice(0, 100));
 
-    const submitResult = await submitRes.json();
-    
-    // Check for error
-    if (submitResult.error) {
-      return {
-        statusCode: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: submitResult.error })
-      };
-    }
+    const responseData = result?.data || "I couldn't find an answer.";
 
-    // Get the event ID for polling
-    const eventId = submitResult.event_id;
-    if (!eventId) {
-      // If no event_id, maybe the response is immediate
-      // Try to parse the response directly
-      if (submitResult.data && Array.isArray(submitResult.data)) {
-        const responseData = submitResult.data[0] || "I couldn't find an answer.";
-        return {
-          statusCode: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            choices: [{
-              message: {
-                role: 'assistant',
-                content: responseData
-              }
-            }]
-          })
-        };
-      }
-      return {
-        statusCode: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'No event ID returned from HF Space' })
-      };
-    }
-
-    // Step 2: Poll for the result
-    const resultUrl = `https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat/${eventId}`;
-    
-    let attempts = 0;
-    const maxAttempts = 35; // 35 seconds max (your app takes ~50s on first run)
-    
-    while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const pollRes = await fetch(resultUrl, {
-        headers: HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {}
-      });
-      
-      const pollData = await pollRes.json();
-      
-      // Check if result is ready
-      if (pollData.data && Array.isArray(pollData.data)) {
-        const responseData = pollData.data[0] || "I couldn't find an answer to that question.";
-        
-        // Return Groq-compatible format
-        return {
-          statusCode: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            choices: [{
-              message: {
-                role: 'assistant',
-                content: responseData
-              }
-            }]
-          })
-        };
-      }
-      
-      attempts++;
-    }
-
-    // Timeout
     return {
-      statusCode: 504,
+      statusCode: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        error: { message: 'Request timed out. The RAG app is still processing. Please try again in a moment.' }
+        choices: [{
+          message: {
+            role: 'assistant',
+            content: responseData
+          }
+        }]
       })
     };
 
   } catch (e) {
-    console.error('Error:', e);
+    console.error('Error details:', {
+      message: e.message,
+      stack: e.stack,
+      name: e.name
+    });
+    
     return {
       statusCode: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        error: { message: 'Request failed: ' + e.message }
+        error: { 
+          message: 'Request failed: ' + e.message,
+          type: e.name || 'UnknownError'
+        }
       })
     };
   }

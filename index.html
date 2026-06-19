@@ -490,5 +490,23 @@ window.printCert=printCert;
 window.copyTemplate=copyTemplate;
 window.toggleAccordion=toggleAccordion;
 </script>
+<script>
+// Fix: Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Fix toggleBook - check if element exists
+  window.toggleBook = function(id) {
+    const bookEl = document.getElementById('book-' + id);
+    if (bookEl) {
+      bookEl.classList.toggle('open');
+    }
+  };
+
+  // Fix xpDisplay - check if element exists
+  const xpDisplay = document.getElementById('xpDisplay');
+  if (xpDisplay) {
+    xpDisplay.textContent = '⚡ ' + (window.STATE?.xp || 0) + ' XP';
+  }
+});
+</script>
 </body>
 </html>
