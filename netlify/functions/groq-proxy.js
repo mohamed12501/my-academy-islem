@@ -3,12 +3,10 @@
 // Your Hugging Face Space is public, so no API key is needed.
 // If you make it private, add HF_API_TOKEN to Netlify environment variables.
 //
-// Once deployed, this is reachable at: /.netlify/functions/rag-proxy
+// Once deployed, this is reachable at: /.netlify/functions/groq-proxy
 
 exports.handler = async (event) => {
   const corsHeaders = {
-    // Netlify serves the HTML and this function from the same domain,
-    // so '*' is fine here — tighten it to your exact domain if you want to be stricter.
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
@@ -33,29 +31,49 @@ exports.handler = async (event) => {
     };
   }
 
+  // === Extract the user's message from the request ===
+  // The AI Tutor sends: { messages: [{ role: 'user', content: '...' }] }
+  let userMessage = "Hello, what is funnel mastery?";
+  
+  if (body.messages && Array.isArray(body.messages)) {
+    // Find the last user message
+    const lastUserMsg = body.messages.filter(m => m.role === 'user').pop();
+    if (lastUserMsg && lastUserMsg.content) {
+      userMessage = lastUserMsg.content;
+    }
+  } else if (body.query) {
+    userMessage = body.query;
+  } else if (body.message) {
+    userMessage = body.message;
+  } else if (body.prompt) {
+    userMessage = body.prompt;
+  }
+
   // === Your HF Space API endpoint ===
   // For Gradio 5.x, use the /api/predict endpoint
-  // If your app uses a different API name, change it here
   const HF_API_URL = 'https://mohamedoudha1312-FunnelBOOKiSLEMKb.hf.space/api/predict';
 
   // === Build the payload for HF Spaces ===
   // Gradio expects: { "data": [input1, input2, ...] }
-  // Adjust based on your RAG app's expected inputs
-  // If your app expects a single string input:
   const hfPayload = {
-    data: [body.query || body.message || body.prompt || "Hello, what is funnel mastery?"]
+    data: [userMessage]
   };
 
   try {
+    // Set a timeout to avoid hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const hfRes = await fetch(HF_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // If your Space is private, uncomment this and add HF_API_TOKEN to Netlify env:
-         'Authorization': `Bearer ${process.env.HF_API_TOKEN}`
       },
-      body: JSON.stringify(hfPayload)
+      body: JSON.stringify(hfPayload),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     // Get the response from Gradio
     const result = await hfRes.text();
@@ -74,10 +92,11 @@ exports.handler = async (event) => {
     }
 
     // Extract the actual response from Gradio's format
-    // Gradio returns: { "data": [response] }
-    let responseData = parsedResult;
+    let responseData = "I couldn't find an answer to that question.";
     if (parsedResult.data && Array.isArray(parsedResult.data)) {
-      responseData = parsedResult.data[0];
+      responseData = parsedResult.data[0] || responseData;
+    } else if (parsedResult.response) {
+      responseData = parsedResult.response;
     } else if (parsedResult.error) {
       return {
         statusCode: 500,
@@ -86,21 +105,45 @@ exports.handler = async (event) => {
       };
     }
 
+    // === Return in Groq-compatible format ===
+    // The AI Tutor expects the response in this format
     return {
       statusCode: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        success: true,
-        response: responseData
+      body: JSON.stringify({
+        choices: [{
+          message: {
+            role: 'assistant',
+            content: responseData
+          }
+        }]
       })
     };
 
   } catch (e) {
     console.error('HF API Error:', e);
+    
+    // Check if it was a timeout
+    if (e.name === 'AbortError') {
+      return {
+        statusCode: 504,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: { 
+            message: 'The RAG app is taking too long to respond. Please try again in a moment.' 
+          }
+        })
+      };
+    }
+
     return {
       statusCode: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: { message: 'Upstream request failed: ' + e.message } })
+      body: JSON.stringify({ 
+        error: { 
+          message: 'Upstream request failed: ' + e.message 
+        } 
+      })
     };
   }
 };
