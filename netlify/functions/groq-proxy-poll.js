@@ -78,6 +78,16 @@ exports.handler = async (event, context) => {
     });
 
     if (!res.ok || !res.body) {
+      clearTimeout(timer);
+      // 502/503 are usually the Space waking from sleep — tell the client
+      // to keep polling instead of surfacing a hard failure.
+      if (res.status === 502 || res.status === 503) {
+        return {
+          statusCode: 202,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'processing', event_id: eventId })
+        };
+      }
       throw new Error(`Upstream returned ${res.status}`);
     }
 
@@ -99,7 +109,7 @@ exports.handler = async (event, context) => {
           return {
             statusCode: 502,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: { message: 'RAG job failed: ' + parsed.data } })
+            body: JSON.stringify({ error: { message: 'The knowledge base encountered an error. Please try again.' } })
           };
         }
 

@@ -496,41 +496,52 @@ async function sendAIMessage() {
       const eventId = submitData.event_id;
       const isFallback = submitData.engine === 'rag-fallback';
       let attempts = 0;
-      const maxAttempts = 120; // up to ~2 min — fallback runs on a free CPU instance
-      
+      let errorStreak = 0;
+      const maxAttempts = 120;
+      const maxErrorStreak = 5;
+
       thinking.textContent = isFallback
         ? '🔄 Primary AI is busy — switching to the course knowledge base... (can take up to 2 minutes on a cold start)'
         : '⏳ Waiting for response...';
       scrollAI();
-      
+
       while (attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         let pollRes, pollData;
         try {
           pollRes = await fetch(`${POLL_API_URL}?event_id=${eventId}`);
           pollData = await pollRes.json();
         } catch (pollErr) {
-          thinking.textContent = '⚠️ Lost connection while waiting. Please try again.';
-          scrollAI();
-          return;
+          errorStreak++;
+          if (errorStreak >= maxErrorStreak) {
+            thinking.textContent = '⚠️ Lost connection while waiting. Please try again.';
+            scrollAI();
+            return;
+          }
+          attempts++;
+          continue;
         }
-        
+
         if (pollData.status === 'complete') {
           thinking.textContent = pollData.response;
           appendToHistory(msg, pollData.response);
           scrollAI();
           return;
         }
-        
-        // Surface real errors immediately instead of silently retrying
-        // for 2 minutes and showing a generic timeout at the end.
+
         if (pollRes.status >= 400 || pollData.error) {
-          thinking.textContent = '⚠️ ' + (pollData.error?.message || 'The knowledge base failed to respond.');
-          scrollAI();
-          return;
+          errorStreak++;
+          if (errorStreak >= maxErrorStreak) {
+            thinking.textContent = '⚠️ ' + (pollData.error?.message || 'The knowledge base failed to respond.');
+            scrollAI();
+            return;
+          }
+          attempts++;
+          continue;
         }
-        
+
+        errorStreak = 0;
         attempts++;
       }
       

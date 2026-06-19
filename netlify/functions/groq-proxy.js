@@ -72,17 +72,25 @@ async function submitToRag(userMessage) {
   const HF_TOKEN = process.env.HF_API_TOKEN;
   const authHeaders = HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {};
 
-  const res = await fetch(`${HF_SPACE_BASE}/gradio_api/call/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders },
-    body: JSON.stringify({ data: [userMessage] })
-  });
+  const maxRetries = 3;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const res = await fetch(`${HF_SPACE_BASE}/gradio_api/call/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      body: JSON.stringify({ data: [userMessage] })
+    });
 
-  const result = await res.json();
-  if (!res.ok || !result.event_id) {
-    throw new Error('Could not start RAG job: ' + JSON.stringify(result));
+    if ((res.status === 502 || res.status === 503) && attempt < maxRetries - 1) {
+      await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+      continue;
+    }
+
+    const result = await res.json();
+    if (!res.ok || !result.event_id) {
+      throw new Error('Could not start RAG job: ' + JSON.stringify(result));
+    }
+    return result.event_id;
   }
-  return result.event_id;
 }
 
 exports.handler = async (event, context) => {
