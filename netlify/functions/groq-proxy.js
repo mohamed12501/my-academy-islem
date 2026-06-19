@@ -1,153 +1,164 @@
 // netlify/functions/groq-proxy.js
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
   };
 
-  if (event.httpMethod === "OPTIONS") {
+  if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: "",
+      body: ''
     };
   }
 
-  if (event.httpMethod !== "POST") {
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       headers: corsHeaders,
-      body: JSON.stringify({ error: "Method not allowed" }),
+      body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
 
   let body;
   try {
-    body = JSON.parse(event.body || "{}");
-  } catch {
+    body = JSON.parse(event.body || '{}');
+  } catch (e) {
     return {
       statusCode: 400,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Invalid JSON" }),
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Invalid JSON' })
     };
   }
 
-  // Extract message
-  let userMessage = "Hello";
-
+  // Extract user message
+  let userMessage = "Hello, what is funnel mastery?";
   if (body.messages && Array.isArray(body.messages)) {
-    const last = body.messages.filter(m => m.role === "user").pop();
-    if (last?.content) userMessage = last.content;
-  } else if (body.message) {
-    userMessage = body.message;
+    const lastUserMsg = body.messages.filter(m => m.role === 'user').pop();
+    if (lastUserMsg && lastUserMsg.content) {
+      userMessage = lastUserMsg.content;
+    }
   } else if (body.query) {
     userMessage = body.query;
+  } else if (body.message) {
+    userMessage = body.message;
+  } else if (body.prompt) {
+    userMessage = body.prompt;
   }
 
+  // ===== CORRECT ENDPOINT FOR YOUR APP =====
+  // Your app uses gr.ChatInterface, so the endpoint is /gradio_api/call/chat
+  const HF_SUBMIT_URL = 'https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat';
+
+  // Get token from environment variable
   const HF_TOKEN = process.env.HF_API_TOKEN;
 
-  if (!HF_TOKEN) {
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Missing HF_API_TOKEN" }),
-    };
-  }
-
   try {
-    // 1. Send request to Gradio Chat endpoint
-    const startRes = await fetch(
-      "https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${HF_TOKEN}`,
-        },
-        body: JSON.stringify({
-          data: [userMessage],
-        }),
-      }
-    );
+    // Step 1: Submit the request
+    const submitRes = await fetch(HF_SUBMIT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {})
+      },
+      body: JSON.stringify({ data: [userMessage] })
+    });
 
-    const startText = await startRes.text();
-
-    // Gradio returns: { event_id: "xxx" }
-    let eventId;
-    try {
-      eventId = JSON.parse(startText).event_id;
-    } catch {
+    const submitResult = await submitRes.json();
+    
+    // Check for error
+    if (submitResult.error) {
       return {
         statusCode: 500,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: "Failed to get event_id from HF",
-          raw: startText,
-        }),
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: submitResult.error })
       };
     }
 
-    // 2. Wait for result
-    const resultRes = await fetch(
-      `https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat/${eventId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${HF_TOKEN}`,
-        },
+    // Get the event ID for polling
+    const eventId = submitResult.event_id;
+    if (!eventId) {
+      // If no event_id, maybe the response is immediate
+      // Try to parse the response directly
+      if (submitResult.data && Array.isArray(submitResult.data)) {
+        const responseData = submitResult.data[0] || "I couldn't find an answer.";
+        return {
+          statusCode: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            choices: [{
+              message: {
+                role: 'assistant',
+                content: responseData
+              }
+            }]
+          })
+        };
       }
-    );
-
-    const resultText = await resultRes.text();
-
-    // 3. Extract final message from SSE stream
-    const lines = resultText.split("\n");
-    let answer = "No response received";
-
-    for (const line of lines) {
-      if (line.startsWith("data:")) {
-        try {
-          const json = JSON.parse(line.replace("data:", "").trim());
-
-          // Usually last message is here:
-          if (Array.isArray(json) && json.length > 0) {
-            const last = json[json.length - 1];
-
-            if (Array.isArray(last) && last[1]) {
-              answer = last[1];
-            } else if (typeof last === "string") {
-              answer = last;
-            }
-          }
-        } catch {}
-      }
+      return {
+        statusCode: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'No event ID returned from HF Space' })
+      };
     }
 
+    // Step 2: Poll for the result
+    const resultUrl = `https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat/${eventId}`;
+    
+    let attempts = 0;
+    const maxAttempts = 35; // 35 seconds max (your app takes ~50s on first run)
+    
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const pollRes = await fetch(resultUrl, {
+        headers: HF_TOKEN ? { 'Authorization': `Bearer ${HF_TOKEN}` } : {}
+      });
+      
+      const pollData = await pollRes.json();
+      
+      // Check if result is ready
+      if (pollData.data && Array.isArray(pollData.data)) {
+        const responseData = pollData.data[0] || "I couldn't find an answer to that question.";
+        
+        // Return Groq-compatible format
+        return {
+          statusCode: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            choices: [{
+              message: {
+                role: 'assistant',
+                content: responseData
+              }
+            }]
+          })
+        };
+      }
+      
+      attempts++;
+    }
+
+    // Timeout
     return {
-      statusCode: 200,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
+      statusCode: 504,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        choices: [
-          {
-            message: {
-              role: "assistant",
-              content: answer,
-            },
-          },
-        ],
-      }),
+        error: { message: 'Request timed out. The RAG app is still processing. Please try again in a moment.' }
+      })
     };
-  } catch (err) {
+
+  } catch (e) {
+    console.error('Error:', e);
     return {
-      statusCode: 500,
-      headers: corsHeaders,
+      statusCode: 502,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        error: err.message,
-      }),
+        error: { message: 'Request failed: ' + e.message }
+      })
     };
   }
 };
