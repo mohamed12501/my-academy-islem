@@ -1,0 +1,24 @@
+{
+  "name": "my-academy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohamed12501/my-academy-islem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mohamed12501/my-academy-islem/issues"
+  },
+  "homepage": "https://github.com/mohamed12501/my-academy-islem#readme",
+  "dependencies": {
+    "@gradio/client": "^2.3.0"
+  }
+}
