@@ -77,7 +77,7 @@ async function submitToRag(userMessage) {
     const res = await fetch(`${HF_SPACE_BASE}/gradio_api/call/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders },
-      body: JSON.stringify({ data: [userMessage] })
+      body: JSON.stringify({ data: [userMessage, []] })
     });
 
     if ((res.status === 502 || res.status === 503) && attempt < maxRetries - 1) {
