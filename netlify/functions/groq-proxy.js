@@ -1,126 +1,153 @@
 // netlify/functions/groq-proxy.js
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
   };
 
-  if (event.httpMethod === 'OPTIONS') {
+  if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: ''
+      body: "",
     };
   }
 
-  if (event.httpMethod !== 'POST') {
+  if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
       headers: corsHeaders,
-      body: JSON.stringify({ error: 'Method not allowed' })
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
 
   let body;
   try {
-    body = JSON.parse(event.body || '{}');
-  } catch (e) {
+    body = JSON.parse(event.body || "{}");
+  } catch {
     return {
       statusCode: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Invalid JSON' })
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Invalid JSON" }),
     };
   }
 
-  // Extract user message
-  let userMessage = "Hello, what is funnel mastery?";
+  // Extract message
+  let userMessage = "Hello";
+
   if (body.messages && Array.isArray(body.messages)) {
-    const lastUserMsg = body.messages.filter(m => m.role === 'user').pop();
-    if (lastUserMsg && lastUserMsg.content) {
-      userMessage = lastUserMsg.content;
-    }
-  } else if (body.query) {
-    userMessage = body.query;
+    const last = body.messages.filter(m => m.role === "user").pop();
+    if (last?.content) userMessage = last.content;
   } else if (body.message) {
     userMessage = body.message;
-  } else if (body.prompt) {
-    userMessage = body.prompt;
+  } else if (body.query) {
+    userMessage = body.query;
   }
 
-  // Your HF Space URL
-  const HF_API_URL = 'https://mohamedoudha1312-FunnelBOOKiSLEMKb.hf.space/api/predict';
-
-  // Get token from environment variable (DO NOT hardcode)
   const HF_TOKEN = process.env.HF_API_TOKEN;
 
   if (!HF_TOKEN) {
-    console.error('HF_API_TOKEN environment variable is not set');
     return {
       statusCode: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Server configuration error: Missing API token' })
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Missing HF_API_TOKEN" }),
     };
   }
 
   try {
-    const hfRes = await fetch(HF_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${HF_TOKEN}`
-      },
-      body: JSON.stringify({ data: [userMessage] })
-    });
+    // 1. Send request to Gradio Chat endpoint
+    const startRes = await fetch(
+      "https://mohamedoudha1312-funnelbookislemkb.hf.space/call/chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${HF_TOKEN}`,
+        },
+        body: JSON.stringify({
+          data: [userMessage],
+        }),
+      }
+    );
 
-    const result = await hfRes.text();
-    
-    let parsedResult;
+    const startText = await startRes.text();
+
+    // Gradio returns: { event_id: "xxx" }
+    let eventId;
     try {
-      parsedResult = JSON.parse(result);
-    } catch (e) {
+      eventId = JSON.parse(startText).event_id;
+    } catch {
       return {
-        statusCode: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
-        body: result
+        statusCode: 500,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          error: "Failed to get event_id from HF",
+          raw: startText,
+        }),
       };
     }
 
-    let responseData = "I couldn't find an answer to that question.";
-    if (parsedResult.data && Array.isArray(parsedResult.data)) {
-      responseData = parsedResult.data[0] || responseData;
-    } else if (parsedResult.response) {
-      responseData = parsedResult.response;
-    } else if (parsedResult.error) {
-      return {
-        statusCode: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: parsedResult.error })
-      };
+    // 2. Wait for result
+    const resultRes = await fetch(
+      `https://mohamedoudha1312-funnelbookislemkb.hf.space/call/chat/${eventId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${HF_TOKEN}`,
+        },
+      }
+    );
+
+    const resultText = await resultRes.text();
+
+    // 3. Extract final message from SSE stream
+    const lines = resultText.split("\n");
+    let answer = "No response received";
+
+    for (const line of lines) {
+      if (line.startsWith("data:")) {
+        try {
+          const json = JSON.parse(line.replace("data:", "").trim());
+
+          // Usually last message is here:
+          if (Array.isArray(json) && json.length > 0) {
+            const last = json[json.length - 1];
+
+            if (Array.isArray(last) && last[1]) {
+              answer = last[1];
+            } else if (typeof last === "string") {
+              answer = last;
+            }
+          }
+        } catch {}
+      }
     }
 
     return {
       statusCode: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        choices: [{
-          message: {
-            role: 'assistant',
-            content: responseData
-          }
-        }]
-      })
+        choices: [
+          {
+            message: {
+              role: "assistant",
+              content: answer,
+            },
+          },
+        ],
+      }),
     };
-
-  } catch (e) {
-    console.error('Error:', e);
+  } catch (err) {
     return {
-      statusCode: 502,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({
-        error: { message: 'Request failed: ' + e.message }
-      })
+        error: err.message,
+      }),
     };
   }
 };
