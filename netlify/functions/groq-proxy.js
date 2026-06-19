@@ -85,6 +85,7 @@ async function submitToRag(messages) {
   const authHeaders = HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {};
   const userMessage = lastUserText(messages);
   const history = messagesToGradioHistory(messages);
+  console.log('RAG submit:', JSON.stringify({ userMessage, historyLen: history.length }));
 
   const maxRetries = 3;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
