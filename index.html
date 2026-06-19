@@ -441,7 +441,6 @@ function stripHtml(html){if(!html)return'';const tmp=document.createElement('div
 
 function buildSystemPrompt(){const lang=STATE.lang==='ar'?'ar':'en';let prompt=`You are an expert marketing coach and tutor inside "Funnel Mastery Academy," a self-paced course built on Russell Brunson's books: DotCom Secrets, Expert Secrets, and Traffic Secrets. Use the course material below as your primary source of truth, in your own words — be concise, practical, and speak like a direct mentor focused on actionable advice. Always reply in the same language the student's most recent message is written in — English, Arabic, or French — even if the course content below is in a different language. Keep replies under 200 words unless asked for more detail.\n\n`;const current=STATE.currentLesson&&LESSONS[STATE.currentLesson];if(current){const text=stripHtml(current.content?.[lang]||current.content?.en||'').slice(0,3000);prompt+=`STUDENT IS CURRENTLY VIEWING — "${current[lang]||current.en}" (${current.book}, ${current.chapter}):\n${text}\n\n`;}const summaries=Object.entries(LESSONS).filter(([id])=>id!==STATE.currentLesson).map(([id,l])=>{const text=stripHtml(l.content?.[lang]||l.content?.en||'').slice(0,220);return`• ${l[lang]||l.en} (${l.book}): ${text}`;});if(summaries.length){prompt+=`OTHER WRITTEN LESSONS IN THIS COURSE:\n${summaries.join('\n')}\n\n`;}prompt+=`Most of the curriculum is still being written. If asked about a lesson not summarized above, answer from your own general knowledge of Brunson's frameworks and say it's general guidance rather than this course's exact lesson content.`;return prompt;}
 
-// Replace the existing sendAIMessage function with this
 async function sendAIMessage() {
   const input = document.getElementById('aiInput');
   const msg = input?.value?.trim();
@@ -452,12 +451,13 @@ async function sendAIMessage() {
   
   const thinking = document.createElement('div');
   thinking.className = 'ai-msg bot';
-  thinking.textContent = STATE.lang === 'ar' ? '⏳ جاري التفكير... (قد يستغرق 30-60 ثانية على أول طلب)' : '⏳ Thinking... (may take 30-60 seconds on first request)';
+  thinking.textContent = '⏳ Processing... (this may take 30-60 seconds)';
   document.getElementById('aiMessages').appendChild(thinking);
   scrollAI();
   
   try {
-    const res = await fetch(PROXY_API_URL, {
+    // Submit the request
+    const submitRes = await fetch(PROXY_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -465,28 +465,53 @@ async function sendAIMessage() {
       })
     });
     
-    const data = await res.json();
+    const submitData = await submitRes.json();
     
-    if (res.status === 502) {
-      thinking.textContent = STATE.lang === 'ar' 
-        ? '⏳ الخادم يسخن... حاول مجدداً بعد 30 ثانية'
-        : '⏳ Server is warming up... Please try again in 30 seconds';
+    // If it's a 202, we need to poll
+    if (submitRes.status === 202 && submitData.event_id) {
+      const eventId = submitData.event_id;
+      let attempts = 0;
+      const maxAttempts = 60; // 60 seconds max
+      
+      thinking.textContent = '⏳ Waiting for response... (this may take 30-60 seconds)';
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const pollRes = await fetch(`${PROXY_API_URL}/poll?event_id=${eventId}`);
+        const pollData = await pollRes.json();
+        
+        if (pollData.status === 'complete') {
+          thinking.textContent = pollData.response;
+          return;
+        }
+        
+        attempts++;
+      }
+      
+      thinking.textContent = '⏳ Request timed out. Please try again.';
       return;
     }
     
-    const reply = data.choices?.[0]?.message?.content?.trim() || 
-                  (STATE.lang === 'ar' ? 'لم أتمكن من الحصول على رد.' : 'Sorry, I could not get a response.');
-    thinking.textContent = reply;
+    // If it's an immediate response
+    if (submitRes.status === 200) {
+      const reply = submitData.choices?.[0]?.message?.content?.trim() || 
+                    'Sorry, I could not get a response.';
+      thinking.textContent = reply;
+      return;
+    }
     
-    // Save to history
-    const history = loadAIHistory();
-    history.push({ role: 'assistant', content: reply });
-    saveAIHistory(history.slice(-MAX_HISTORY_MESSAGES));
+    // If it's a 502 (timeout)
+    if (submitRes.status === 502) {
+      thinking.textContent = '⏳ The AI is warming up. Please wait 30 seconds and try again.';
+      return;
+    }
+    
+    throw new Error('Unexpected response: ' + JSON.stringify(submitData));
     
   } catch (e) {
-    thinking.textContent = STATE.lang === 'ar' 
-      ? '⚠️ خطأ في الاتصال. حاول مجدداً.'
-      : '⚠️ Connection error. Please try again.';
+    thinking.textContent = '⚠️ Connection error. Please try again.';
+    console.error('Error:', e);
   }
   scrollAI();
 }
