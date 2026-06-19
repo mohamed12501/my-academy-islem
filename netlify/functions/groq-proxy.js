@@ -28,6 +28,18 @@ function lastUserText(messages) {
   return lastUser?.content || 'Hello, what is funnel mastery?';
 }
 
+function messagesToGradioHistory(messages) {
+  const nonSystem = messages.filter(m => m.role !== 'system');
+  const pairs = [];
+  for (let i = 0; i < nonSystem.length - 1; i++) {
+    if (nonSystem[i].role === 'user' && nonSystem[i + 1]?.role === 'assistant') {
+      pairs.push([nonSystem[i].content, nonSystem[i + 1].content]);
+      i++;
+    }
+  }
+  return pairs;
+}
+
 async function tryGroq(messages) {
   if (!process.env.GROQ_API_KEY) {
     return { ok: false, reason: 'GROQ_API_KEY not configured' };
@@ -68,16 +80,18 @@ async function tryGroq(messages) {
   }
 }
 
-async function submitToRag(userMessage) {
+async function submitToRag(messages) {
   const HF_TOKEN = process.env.HF_API_TOKEN;
   const authHeaders = HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {};
+  const userMessage = lastUserText(messages);
+  const history = messagesToGradioHistory(messages);
 
   const maxRetries = 3;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const res = await fetch(`${HF_SPACE_BASE}/gradio_api/call/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders },
-      body: JSON.stringify({ data: [userMessage, []] })
+      body: JSON.stringify({ data: [userMessage, history] })
     });
 
     if ((res.status === 502 || res.status === 503) && attempt < maxRetries - 1) {
@@ -147,7 +161,7 @@ exports.handler = async (event, context) => {
 
   // ---- 2) Fall back to the RAG Space ----
   try {
-    const event_id = await submitToRag(lastUserText(messages));
+    const event_id = await submitToRag(messages);
     return {
       statusCode: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
