@@ -1,17 +1,17 @@
 // netlify/functions/groq-proxy-poll.js
 //
-// Polls a previously-submitted Gradio chat job.
+// Polls a previously-submitted RAG fallback job (only reached when Groq
+// was unavailable — see groq-proxy.js).
 //
-// IMPORTANT: the Gradio "call/{event_id}" endpoint returns Server-Sent
-// Events (Content-Type: text/event-stream), NOT plain JSON. Calling
-// `.json()` on it throws. We read it as a stream instead and look for an
-// "event: complete" block.
+// The Gradio "call/{event_id}" endpoint returns Server-Sent Events
+// (Content-Type: text/event-stream), NOT plain JSON — calling `.json()`
+// on it throws. We read it as a stream and look for an "event: complete"
+// block.
 //
 // Each invocation only listens for up to ~8s (well under Netlify's
 // function timeout) before reporting "processing" back to the client —
-// the frontend's existing polling loop (every 1s, up to 60x) calls this
-// repeatedly until the answer is ready, which covers the 30-60s cold
-// start of the HF Space's free CPU tier.
+// the frontend's polling loop calls this repeatedly until the answer is
+// ready, covering the Space's free-CPU cold start / inference time.
 
 const HF_SPACE_BASE = 'https://mohamedoudha1312-funnelbookislemkb.hf.space';
 const MAX_LISTEN_MS = 8000;
@@ -20,14 +20,18 @@ function parseSseBuffer(buffer) {
   // SSE events are separated by a blank line; each block looks like:
   //   event: complete
   //   data: ["the response text"]
-  const blocks = buffer.split('\n\n');
+  const blocks = buffer.split(/\n\n+/);
   for (const block of blocks) {
-    const eventLine = block.split('\n').find(l => l.startsWith('event:'));
-    const dataLine = block.split('\n').find(l => l.startsWith('data:'));
-    if (!eventLine || !dataLine) continue;
+    const lines = block.split('\n').map(l => l.replace(/\r$/, ''));
+    const eventLine = lines.find(l => l.startsWith('event:'));
+    if (!eventLine) continue;
 
     const eventType = eventLine.slice('event:'.length).trim();
-    const rawData = dataLine.slice('data:'.length).trim();
+    // Per the SSE spec, multiple "data:" lines in one block get joined.
+    const rawData = lines
+      .filter(l => l.startsWith('data:'))
+      .map(l => l.slice('data:'.length).trim())
+      .join('\n');
 
     if (eventType === 'complete') {
       let parsed = null;
@@ -37,7 +41,7 @@ function parseSseBuffer(buffer) {
     if (eventType === 'error') {
       return { done: true, error: true, data: rawData };
     }
-    // "heartbeat" events fall through — keep reading.
+    // "heartbeat" (or anything else) falls through — keep reading.
   }
   return { done: false };
 }
@@ -53,20 +57,12 @@ exports.handler = async (event, context) => {
     return { statusCode: 200, headers: corsHeaders, body: '' };
   }
   if (event.httpMethod !== 'GET') {
-    return {
-      statusCode: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   const eventId = event.queryStringParameters?.event_id;
   if (!eventId) {
-    return {
-      statusCode: 400,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Missing event_id' })
-    };
+    return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Missing event_id' }) };
   }
 
   const HF_TOKEN = process.env.HF_API_TOKEN;
@@ -103,7 +99,7 @@ exports.handler = async (event, context) => {
           return {
             statusCode: 502,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: { message: 'Gradio job failed: ' + parsed.data } })
+            body: JSON.stringify({ error: { message: 'RAG job failed: ' + parsed.data } })
           };
         }
 
@@ -129,8 +125,8 @@ exports.handler = async (event, context) => {
   } catch (e) {
     clearTimeout(timer);
     if (e.name === 'AbortError') {
-      // Hit our own listen-time budget, not a real failure — the HF Space
-      // job is probably still running (cold start can take 30-60s).
+      // Hit our own listen-time budget, not a real failure — the job is
+      // probably still running.
       return {
         statusCode: 202,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
