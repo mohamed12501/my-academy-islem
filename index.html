@@ -425,7 +425,7 @@ function saveNote(){const input=document.getElementById('noteInput');const text=
 
 function deleteNote(idx){STATE.notes.splice(idx,1);localStorage.setItem('fma_notes',JSON.stringify(STATE.notes));renderNotesList();}
 
-const PROXY_API_URL='/.netlify/functions/groq-proxy';const AI_HISTORY_KEY='fma_ai_history';const MAX_HISTORY_MESSAGES=16;
+const PROXY_API_URL='/.netlify/functions/groq-proxy';const POLL_API_URL='/.netlify/functions/groq-proxy-poll';const AI_HISTORY_KEY='fma_ai_history';const MAX_HISTORY_MESSAGES=16;
 
 function toggleAI(){document.getElementById('aiPanel').classList.toggle('open');}
 
@@ -478,7 +478,7 @@ async function sendAIMessage() {
       while (attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        const pollRes = await fetch(`${PROXY_API_URL}/poll?event_id=${eventId}`);
+        const pollRes = await fetch(`${POLL_API_URL}?event_id=${eventId}`);
         const pollData = await pollRes.json();
         
         if (pollData.status === 'complete') {

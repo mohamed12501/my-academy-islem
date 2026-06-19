@@ -1,4 +1,13 @@
 // netlify/functions/groq-proxy.js
+//
+// Submits a question to the Funnel Mastery Tutor Gradio Space and returns
+// an event_id for the frontend to poll via groq-proxy-poll.js.
+//
+// This Space's Gradio app (a gr.ChatInterface) only exposes one function,
+// named "chat" (see the Space's "API" tab: api_name: /chat). There is no
+// "/predict" — don't waste a round trip probing for it.
+
+const HF_SPACE_BASE = 'https://mohamedoudha1312-funnelbookislemkb.hf.space';
 
 exports.handler = async (event, context) => {
   const corsHeaders = {
@@ -14,7 +23,7 @@ exports.handler = async (event, context) => {
   if (event.httpMethod === 'GET') {
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         status: 'ok',
         message: 'Proxy is working!',
@@ -42,12 +51,10 @@ exports.handler = async (event, context) => {
     };
   }
 
-  let userMessage = "Hello, what is funnel mastery?";
+  let userMessage = 'Hello, what is funnel mastery?';
   if (body.messages && Array.isArray(body.messages)) {
     const lastUserMsg = body.messages.filter(m => m.role === 'user').pop();
-    if (lastUserMsg && lastUserMsg.content) {
-      userMessage = lastUserMsg.content;
-    }
+    if (lastUserMsg && lastUserMsg.content) userMessage = lastUserMsg.content;
   } else if (body.query) {
     userMessage = body.query;
   } else if (body.message) {
@@ -57,202 +64,39 @@ exports.handler = async (event, context) => {
   }
 
   const HF_TOKEN = process.env.HF_API_TOKEN;
+  // Only attach Authorization if a token is actually configured — this
+  // Space looks public, and sending "Bearer undefined" for no reason is
+  // just noise (harmless here, but worth avoiding).
+  const authHeaders = HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {};
 
   try {
-    // ===== DIRECT API CALL (NO GRADIO CLIENT) =====
-    // Step 1: Submit the request
-    const submitRes = await fetch(
-      'https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/predict',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${HF_TOKEN}`
-        },
-        body: JSON.stringify({ data: [userMessage] })
-      }
-    );
+    const submitRes = await fetch(`${HF_SPACE_BASE}/gradio_api/call/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      body: JSON.stringify({ data: [userMessage] })
+    });
 
-    // If it's a 404, try alternative endpoints
-    if (submitRes.status === 404) {
-      // Try older Gradio endpoint
-      const altRes = await fetch(
-        'https://mohamedoudha1312-funnelbookislemkb.hf.space/api/predict',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${HF_TOKEN}`
-          },
-          body: JSON.stringify({ data: [userMessage] })
-        }
-      );
-      
-      if (altRes.status === 404) {
-        // Try with gradio_api/call/chat
-        const chatRes = await fetch(
-          'https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${HF_TOKEN}`
-            },
-            body: JSON.stringify({ data: [userMessage] })
-          }
-        );
-        
-        const chatResult = await chatRes.json();
-        
-        if (chatResult.event_id) {
-          return {
-            statusCode: 202,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              status: 'processing',
-              event_id: chatResult.event_id,
-              message: 'Your request is being processed. Please poll the /poll endpoint.'
-            })
-          };
-        }
-      }
-      
-      const altResult = await altRes.json();
-      
-      if (altResult.event_id) {
-        return {
-          statusCode: 202,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            status: 'processing',
-            event_id: altResult.event_id,
-            message: 'Your request is being processed. Please poll the /poll endpoint.'
-          })
-        };
-      }
-    }
-
-    // If it's a successful immediate response
-    if (submitRes.status === 200) {
-      const result = await submitRes.json();
-      const responseData = result.data?.[0] || result.response || "I couldn't find an answer.";
-      
-      return {
-        statusCode: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          choices: [{
-            message: {
-              role: 'assistant',
-              content: responseData
-            }
-          }]
-        })
-      };
-    }
-
-    // If there's an event_id
     const submitResult = await submitRes.json();
-    if (submitResult.event_id) {
-      return {
-        statusCode: 202,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'processing',
-          event_id: submitResult.event_id,
-          message: 'Your request is being processed. Please poll the /poll endpoint.'
-        })
-      };
+
+    if (!submitRes.ok || !submitResult.event_id) {
+      throw new Error('Could not start a chat job: ' + JSON.stringify(submitResult));
     }
 
-    throw new Error('Unexpected response format: ' + JSON.stringify(submitResult));
-
-  } catch (e) {
-    console.error('Error:', e.message);
-    
-    return {
-      statusCode: 502,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: {
-          message: 'Request failed: ' + e.message
-        }
-      })
-    };
-  }
-};
-
-// ===== POLLING ENDPOINT =====
-exports.poll = async (event, context) => {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: corsHeaders, body: '' };
-  }
-
-  if (event.httpMethod !== 'GET') {
-    return {
-      statusCode: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
-  }
-
-  const eventId = event.queryStringParameters?.event_id;
-  if (!eventId) {
-    return {
-      statusCode: 400,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Missing event_id' })
-    };
-  }
-
-  const HF_TOKEN = process.env.HF_API_TOKEN;
-
-  try {
-    const pollRes = await fetch(
-      `https://mohamedoudha1312-funnelbookislemkb.hf.space/gradio_api/call/chat/${eventId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${HF_TOKEN}`
-        }
-      }
-    );
-
-    const result = await pollRes.json();
-
-    if (result.data && Array.isArray(result.data)) {
-      return {
-        statusCode: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'complete',
-          response: result.data[0] || "I couldn't find an answer."
-        })
-      };
-    }
-
-    // Still processing
     return {
       statusCode: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         status: 'processing',
-        event_id: eventId
+        event_id: submitResult.event_id,
+        message: 'Your request is being processed. Please poll groq-proxy-poll.'
       })
     };
-
   } catch (e) {
+    console.error('Error:', e.message);
     return {
       statusCode: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: { message: 'Polling failed: ' + e.message }
-      })
+      body: JSON.stringify({ error: { message: 'Request failed: ' + e.message } })
     };
   }
 };
